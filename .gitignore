@@ -6,3 +6,5 @@
 *.test
 *.out
 .DS_Store
+/producer/bin/service
+

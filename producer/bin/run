@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+
+export TW_CONSUMER_KEY="${TW_CONSUMER_KEY:-test-consumer-key}"
+export TW_CONSUMER_SECRET="${TW_CONSUMER_SECRET:-test-consumer-secret}"
+
+go mod tidy
+go mod vendor
+
+go build -a -tags netgo \
+    -ldflags "-w -extldflags -static" \
+    -mod vendor \
+    -o bin/service
+
+bin/service

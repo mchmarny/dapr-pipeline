@@ -15,19 +15,39 @@ func defaultHandler(c *gin.Context) {
 	})
 }
 
+func mockHandler(c *gin.Context) {
+
+	query := &Query{
+		Text:     "dapr",
+		Username: "dapr",
+		Token:    "mock",
+		Secret:   "mock",
+	}
+
+	c.JSON(http.StatusOK, query)
+
+}
+
 func queryHandler(c *gin.Context) {
 
-	// if e := publish(c.Request.Context(), data); e != nil {
-	// 	logger.Printf("error publishing notification: %v", e)
-	// 	c.JSON(http.StatusInternalServerError, gin.H{
-	// 		"message": "Error handling notification",
-	// 		"status":  "Failure",
-	// 	})
-	// 	return
-	// }
+	var q Query
+	if err := c.ShouldBindJSON(&q); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   err.Error(),
+			"message": "unable to parse query",
+		})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Notification proccessed",
-		"status":  "OK",
-	})
+	list, err := search(queryConfig, &q)
+	if err != nil {
+		logger.Printf("error executing query: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error error executing query",
+			"status":  "Failure",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, list)
 }

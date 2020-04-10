@@ -16,12 +16,14 @@ var (
 	servicePort    = env.MustGetEnvVar("PORT", "8080")
 	serviceVersion = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
 
-	consumerKey    = env.MustGetEnvVar("TW_CONSUMER_KEY", "")
-	consumerSecret = env.MustGetEnvVar("TW_CONSUMER_SECRET", "")
+	queryConfig = &Config{
+		Key:    env.MustGetEnvVar("TW_CONSUMER_KEY", ""),
+		Secret: env.MustGetEnvVar("TW_CONSUMER_SECRET", ""),
+	}
 
-	daprPort  = env.MustGetEnvVar("DAPR_HTTP_PORT", "3500")
-	daprStore = env.MustGetEnvVar("DAPR_STORE", "tweets")
-	storeURL  = fmt.Sprintf("http://localhost:%s/v1.0/state/%s", daprPort, daprStore)
+	storeURL = fmt.Sprintf("http://localhost:%s/v1.0/state/%s",
+		env.MustGetEnvVar("DAPR_HTTP_PORT", "3500"),
+		env.MustGetEnvVar("DAPR_STORE", "tweets"))
 )
 
 func main() {
@@ -38,7 +40,8 @@ func main() {
 	// api
 	v1 := r.Group("/v1")
 	{
-		v1.POST("/notif", queryHandler)
+		v1.POST("/query", queryHandler)
+		v1.GET("/query", mockHandler) //TODO: remove
 	}
 
 	// server
