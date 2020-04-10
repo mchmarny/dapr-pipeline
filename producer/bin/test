@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export TW_CONSUMER_KEY="${TW_CONSUMER_KEY:-test-consumer-key}"
+export TW_CONSUMER_SECRET="${TW_CONSUMER_SECRET:-test-consumer-secret}"
+
+set -o errexit
+set -o pipefail
+
+go mod tidy
+go mod vendor
+
+# go test -v -count=1 -race ./...
+go test -v -count=1 -run TestSimpleSearch ./...

@@ -1,8 +1,11 @@
 *.exe
-*.exe~
 *.dll
 *.so
 *.dylib
+
 *.test
+
 *.out
-.DS_Store
+*.txt
+
+vendor/
