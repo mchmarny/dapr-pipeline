@@ -122,15 +122,13 @@ func search(q *Query) (r *SearchResult, err error) {
 	httpClient := config.Client(oauth1.NoContext, token)
 	tc := twitter.NewClient(httpClient)
 
-	logger.Printf("searching for '%s' since id: %d", q.Text, q.SinceID)
+	// logger.Printf("searching for '%s' since id: %d", q.Text, q.SinceID)
 	search, resp, err := tc.Search.Tweets(&twitter.SearchTweetParams{
-		Query:           q.Text,
-		Count:           maxTweets,
-		Lang:            q.Lang,
-		SinceID:         q.SinceID,
-		IncludeEntities: twitter.Bool(true),
-		TweetMode:       "extended",
-		ResultType:      "popular",
+		Query:      q.Text,
+		Count:      maxTweets,
+		Lang:       q.Lang,
+		SinceID:    q.SinceID,
+		ResultType: "recent",
 	})
 
 	if err != nil {
@@ -140,25 +138,41 @@ func search(q *Query) (r *SearchResult, err error) {
 
 	r = &SearchResult{
 		Query:    search.Metadata.Query,
-		Found:    len(search.Statuses),
 		SinceID:  q.SinceID,
 		MaxID:    q.SinceID, // start with the previous max in case there is no more results
 		Duration: search.Metadata.CompletedIn,
 	}
 
-	for _, t := range search.Statuses {
-		t := &SimpleTweet{
-			ID:        t.ID,
-			Query:     q.Text,
-			Author:    strings.TrimSpace(strings.ToLower(t.User.ScreenName)),
-			Content:   t.FullText,
-			Published: convertTwitterTime(t.CreatedAt),
+	for _, s := range search.Statuses {
+
+		// skip if not newer than the one already processed
+		if s.ID <= r.MaxID {
+			continue
 		}
-		if err = publishQueryResult(t); err != nil {
+
+		// increment found count to comp to published later
+		r.Found++
+
+		// create simple tweet from status
+		t := &SimpleTweet{
+			ID:        s.ID,
+			Query:     q.Text,
+			Author:    strings.TrimSpace(strings.ToLower(s.User.ScreenName)),
+			Content:   s.FullText,
+			Published: convertTwitterTime(s.CreatedAt),
+		}
+
+		// publish simple tweet
+		if err = publishData(t); err != nil {
+			logger.Printf("error on publish %v: %v", t, err)
+			//return so we don't update the last ID and have chance to reporcess this query
 			return nil, err
 		}
-		r.Published++
+		// set if current tweet ID larger than the current max
 		r.MaxID = t.ID
+
+		// increment published count
+		r.Published++
 	}
 
 	return r, nil

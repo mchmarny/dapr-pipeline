@@ -89,10 +89,10 @@ func parseQueryKey(q *Query) (key string, err error) {
 	}
 
 	rawKey := fmt.Sprintf("u:%s|t:%s", q.Username, q.Text)
-	logger.Printf("raw key: %s", rawKey)
+	// logger.Printf("raw key: %s", rawKey)
 
 	hashedKey := fmt.Sprintf("qk-%s", toMD5Hash(rawKey))
-	logger.Printf("hashed key: %s", hashedKey)
+	// logger.Printf("hashed key: %s", hashedKey)
 
 	return hashedKey, nil
 

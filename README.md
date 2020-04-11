@@ -17,7 +17,7 @@ dapr invoke --app-id provider \
 
 ### Deep service path
 
-This kind of nested methods (e.g. `/v1/query`) works fine:
+This kind of nested methods (e.g. `/v1/query`) invocation in CLI works fine:
 
 ```shell
 dapr invoke --app-id provider \
@@ -25,7 +25,7 @@ dapr invoke --app-id provider \
             --payload '{ "f1": "v1", "f2": "v2" }'
 ```
 
-But `curl` invocation gets messy
+...but `REST` invocation gets messy
 
 ```shell
 curl -d "@query/simple-query.json" \
@@ -35,7 +35,7 @@ curl -d "@query/simple-query.json" \
 
 ### State store bootstrapping
 
-On initial get to store that has not been yet configured there seems to be some error inconsistency
+On initial get to store that has not been yet configured there seems to be some error inconsistencies:
 
 ```shell
 $: curl -v http://localhost:3500/v1.0/state/producer/qid-1dcd8a3205dfbd5725f2e6e5ec59df28

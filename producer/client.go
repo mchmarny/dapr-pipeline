@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -18,15 +17,15 @@ var (
 	clientTimeout = time.Second * 30
 )
 
-// IDStateData represents ID state item in dapr
-type IDStateData struct {
-	Key     string          `json:"key"`
-	Value   int64           `json:"value"`
-	Options *IDStateOptions `json:"options,omitempty"`
+// StateData represents ID state item in dapr
+type StateData struct {
+	Key     string        `json:"key"`
+	Value   interface{}   `json:"value"`
+	Options *StateOptions `json:"options,omitempty"`
 }
 
-// IDStateOptions is the dapr state data option for IDStateData
-type IDStateOptions struct {
+// StateOptions is the dapr state data option for StateData
+type StateOptions struct {
 	Consistency string `json:"consistency,omitempty"`
 }
 
@@ -63,7 +62,7 @@ func getLastID(key string) (id int64, err error) {
 		return 0, errors.Wrapf(err, "error reading response from GET to %s", url)
 	}
 
-	idStr := strings.ReplaceAll(string(data), "\"", "") //HUCK: save as json object so can parse here
+	idStr := string(data) //HUCK: save as json object so can parse here
 	lastID, err := strconv.ParseInt(idStr, 0, 64)
 	if err != nil {
 		return 0, errors.Wrapf(err, "error parsing response '%s' from GET to %s", idStr, url)
@@ -75,14 +74,16 @@ func getLastID(key string) (id int64, err error) {
 
 func saveLastID(key string, id int64) error {
 
-	d := &IDStateData{
-		Key:   key,
-		Value: id,
-		Options: &IDStateOptions{
-			Consistency: "strong",
+	s := []*StateData{
+		&StateData{
+			Key:   key,
+			Value: id,
+			Options: &StateOptions{
+				Consistency: "strong",
+			},
 		},
 	}
-	s := []*IDStateData{d}
+
 	b, _ := json.Marshal(s)
 	req, err := http.NewRequest(http.MethodPost, stateURL, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
@@ -108,9 +109,9 @@ func saveLastID(key string, id int64) error {
 
 }
 
-func publishQueryResult(t *SimpleTweet) error {
+func publishData(data interface{}) error {
 
-	b, _ := json.Marshal(t)
+	b, _ := json.Marshal(data)
 	req, err := http.NewRequest(http.MethodPost, busURL, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -119,7 +120,7 @@ func publishQueryResult(t *SimpleTweet) error {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return errors.Wrapf(err, "error publishing result %+v to %s", t, busURL)
+		return errors.Wrapf(err, "error publishing result %+v to %s", data, busURL)
 	}
 	defer resp.Body.Close()
 
@@ -128,7 +129,7 @@ func publishQueryResult(t *SimpleTweet) error {
 	if resp.StatusCode != http.StatusOK {
 		dump, _ := httputil.DumpResponse(resp, true)
 		return fmt.Errorf("invalid response code from POST to %s with result: %+v - %q",
-			busURL, t, dump)
+			busURL, data, dump)
 	}
 
 	return nil
