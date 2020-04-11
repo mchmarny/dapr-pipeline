@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -25,7 +26,7 @@ type Query struct {
 
 	// SinceID is the id of the tweet to start search from
 	// If not provided it will be set to the last tweet returned by this query
-	SinceID int `json:"since_id"`
+	SinceID string `json:"since_id"`
 
 	// Username is the Twitter username who's Token/Secrets are assciated with
 	Username string `json:"user"`
@@ -98,7 +99,7 @@ func (c *Config) validate() error {
 // Result represents the query result
 type Result struct {
 	// ID is the string representation of the tweet ID
-	ID int64 `json:"id"`
+	ID string `json:"id"`
 	// Author is the name of the tweet user
 	Author string `json:"author"`
 	// Text is the full text body of the tweet
@@ -130,7 +131,7 @@ func search(c *Config, q *Query) (r []*Result, err error) {
 	// Mocking for now
 	for i := 0; i < q.Count; i++ {
 		item := &Result{
-			ID:        int64(i),
+			ID:        strconv.Itoa(i),
 			Author:    fmt.Sprintf("author%d", i),
 			Text:      fmt.Sprintf("text %d", i),
 			Published: time.Now().UTC(),

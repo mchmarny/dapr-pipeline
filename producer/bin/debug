@@ -9,9 +9,9 @@ export TW_CONSUMER_SECRET="${TW_CONSUMER_SECRET:-test-consumer-secret}"
 go mod tidy
 go mod vendor
 
-dapr run --app-id provider \
-         --app-port 8080 \
-         --protocol http \
-         --max-concurrency 1 \
-         --port 3500 \
-         go run handler.go searcher.go store.go main.go
+go build -a -tags netgo \
+    -ldflags "-w -extldflags -static" \
+    -mod vendor \
+    -o bin/service
+
+bin/service
