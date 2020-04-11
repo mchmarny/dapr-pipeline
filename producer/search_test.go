@@ -18,28 +18,15 @@ func TestSimpleSearch(t *testing.T) {
 		Count:    count,
 	}
 
-	c := &Config{
-		Key:    "test",
-		Secret: "test",
-	}
-
-	list, err := search(c, q)
+	list, err := search(q)
 	assert.Nil(t, err)
 	assert.NotNil(t, list)
-	assert.Equal(t, len(list), count)
 
 }
 
 func TestSearchErrors(t *testing.T) {
 
-	_, err := search(nil, nil)
-	assert.NotNil(t, err)
-
-	c := &Config{
-		Key: "test",
-	}
-
-	_, err = search(c, nil)
+	_, err := search(nil)
 	assert.NotNil(t, err)
 
 	tooHighCount := maxTweets + 1
@@ -51,7 +38,7 @@ func TestSearchErrors(t *testing.T) {
 		Count:    tooHighCount,
 	}
 
-	_, err = search(c, q)
+	_, err = search(q)
 	assert.NotNil(t, err)
 
 }

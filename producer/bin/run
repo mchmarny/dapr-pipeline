@@ -14,4 +14,4 @@ dapr run --app-id provider \
          --protocol http \
          --max-concurrency 1 \
          --port 3500 \
-         go run handler.go searcher.go store.go main.go
+         go run handler.go search.go client.go main.go

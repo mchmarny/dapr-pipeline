@@ -1,7 +1,6 @@
 {
-    "text": "dapr",
+    "text": "java",
     "user": "dapr",
-    "count": 3,
-    "token": "mock",
-    "secret": "mock"
+    "token": "test",
+    "secret": "test"
 }

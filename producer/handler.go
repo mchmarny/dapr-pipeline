@@ -43,40 +43,35 @@ func queryHandler(c *gin.Context) {
 		return
 	}
 
-	if q.SinceID == "" {
-		lastID, err := getLastID(queryKey)
-		if err != nil {
-			logger.Printf("error retrieving last query ID: %v", err)
-			c.JSON(http.StatusBadRequest, clientError)
-			return
-		}
-		if lastID != "" {
-			// update the since ID with the one retrieved from dapr state
-			logger.Printf("found last ID: %s", lastID)
-			q.SinceID = lastID
-		}
+	lastMaxID, err := getLastID(queryKey)
+	if err != nil {
+		logger.Printf("error retrieving state: %v", err)
+		c.JSON(http.StatusBadRequest, clientError)
+		return
 	}
 
-	list, err := search(queryConfig, &q)
+	logger.Printf("found last max ID: %d", lastMaxID)
+	q.SinceID = lastMaxID
+
+	r, err := search(&q)
 	if err != nil {
 		logger.Printf("error executing query: %v", err)
 		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
 
-	// save last tweet ID in state if there are results
-	if len(list) > 0 {
-		newLastID := list[len(list)-1].ID
-		logger.Printf("new last ID: %s", newLastID)
-		err = saveLastID(queryKey, newLastID)
+	logger.Printf("search result (sinceID: %d, maxID: %d)", r.SinceID, r.MaxID)
+	// save only if there were results
+	if r.MaxID > 0 {
+		err = saveLastID(queryKey, r.MaxID)
 		if err != nil {
-			logger.Printf("error saving new last ID: %v", err)
+			logger.Printf("error saving state: %v", err)
 			c.JSON(http.StatusInternalServerError, clientError)
 			return
 		}
 	}
 
-	c.JSON(http.StatusOK, list)
+	c.JSON(http.StatusOK, r)
 }
 
 func parseQueryKey(q *Query) (key string, err error) {

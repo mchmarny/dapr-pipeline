@@ -6,5 +6,6 @@
 *.test
 *.out
 .DS_Store
-/producer/bin/service
 
+/producer/bin/service
+/producer/query/user-query.json

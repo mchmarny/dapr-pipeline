@@ -18,16 +18,14 @@ var (
 	serviceVersion = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
 
 	// twitter
-	queryConfig = &Config{
-		Key:    env.MustGetEnvVar("TW_CONSUMER_KEY", ""),
-		Secret: env.MustGetEnvVar("TW_CONSUMER_SECRET", ""),
-	}
+	consumerKey    = env.MustGetEnvVar("TW_CONSUMER_KEY", "")
+	consumerSecret = env.MustGetEnvVar("TW_CONSUMER_SECRET", "")
 
 	// dapr
 	daprPort = env.MustGetEnvVar("DAPR_HTTP_PORT", "3500")
 	stateURL = fmt.Sprintf("http://localhost:%s/v1.0/state/%s", daprPort,
 		env.MustGetEnvVar("DAPR_STORE_NAME", "statestore"))
-	queueURL = fmt.Sprintf("http://localhost:%s/v1.0/publish/%s", daprPort,
+	busURL = fmt.Sprintf("http://localhost:%s/v1.0/publish/%s", daprPort,
 		env.MustGetEnvVar("DAPR_QUEUE_NAME", "messagebus"))
 )
 
