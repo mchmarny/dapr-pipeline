@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
-	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -29,7 +28,7 @@ type StateOptions struct {
 	Consistency string `json:"consistency,omitempty"`
 }
 
-func getLastID(key string) (id int64, err error) {
+func getState(key string) (data []byte, err error) {
 
 	url := fmt.Sprintf("%s/%s", stateURL, key)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -42,7 +41,7 @@ func getLastID(key string) (id int64, err error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, errors.Wrapf(err, "error quering state service: %s", url)
+		return nil, errors.Wrapf(err, "error quering state service: %s", url)
 	}
 	defer resp.Body.Close()
 
@@ -50,41 +49,31 @@ func getLastID(key string) (id int64, err error) {
 
 	// on initial run there won't be any state
 	if resp.StatusCode == http.StatusNoContent {
-		return 0, nil
+		return nil, nil
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("invalid response code from GET to %s: %d", url, resp.StatusCode)
+		return nil, fmt.Errorf("invalid response code from GET to %s: %d", url, resp.StatusCode)
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return 0, errors.Wrapf(err, "error reading response from GET to %s", url)
+		return nil, errors.Wrapf(err, "error reading response from GET to %s", url)
 	}
 
-	idStr := string(data) //HUCK: save as json object so can parse here
-	lastID, err := strconv.ParseInt(idStr, 0, 64)
-	if err != nil {
-		return 0, errors.Wrapf(err, "error parsing response '%s' from GET to %s", idStr, url)
-	}
-
-	return lastID, nil
+	return content, nil
 
 }
 
-func saveLastID(key string, id int64) error {
+func saveState(key string, data interface{}) error {
 
-	s := []*StateData{
-		&StateData{
-			Key:   key,
-			Value: id,
-			Options: &StateOptions{
-				Consistency: "strong",
-			},
-		},
+	state := &StateData{
+		Key:     key,
+		Value:   data,
+		Options: &StateOptions{Consistency: "strong"},
 	}
-
-	b, _ := json.Marshal(s)
+	list := []*StateData{state}
+	b, _ := json.Marshal(list)
 	req, err := http.NewRequest(http.MethodPost, stateURL, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -93,7 +82,7 @@ func saveLastID(key string, id int64) error {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return errors.Wrapf(err, "error posting to %s with key: %s, id: %s", stateURL, key, id)
+		return errors.Wrapf(err, "error posting to %s with key: %s, data: %v", stateURL, key, data)
 	}
 	defer resp.Body.Close()
 
@@ -101,15 +90,15 @@ func saveLastID(key string, id int64) error {
 
 	if resp.StatusCode != http.StatusCreated {
 		dump, _ := httputil.DumpResponse(resp, true)
-		return fmt.Errorf("invalid response code from POST to %s with key: %s, id: %d - %q",
-			stateURL, key, id, dump)
+		return fmt.Errorf("invalid response code from POST to %s with key: %s, data: %v - %q",
+			stateURL, key, data, dump)
 	}
 
 	return nil
 
 }
 
-func publishData(data interface{}) error {
+func publish(data interface{}) error {
 
 	b, _ := json.Marshal(data)
 	req, err := http.NewRequest(http.MethodPost, busURL, bytes.NewBuffer(b))

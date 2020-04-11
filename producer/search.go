@@ -163,7 +163,7 @@ func search(q *Query) (r *SearchResult, err error) {
 		}
 
 		// publish simple tweet
-		if err = publishData(t); err != nil {
+		if err = publish(t); err != nil {
 			logger.Printf("error on publish %v: %v", t, err)
 			//return so we don't update the last ID and have chance to reporcess this query
 			return nil, err

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,9 +44,17 @@ func queryHandler(c *gin.Context) {
 		return
 	}
 
-	lastMaxID, err := getLastID(queryKey)
+	stateContent, err := getState(queryKey)
 	if err != nil {
 		logger.Printf("error retrieving state: %v", err)
+		c.JSON(http.StatusBadRequest, clientError)
+		return
+	}
+
+	idStr := string(stateContent) //HUCK: save as json object so can parse here
+	lastMaxID, err := strconv.ParseInt(idStr, 0, 64)
+	if err != nil {
+		logger.Printf("error parsing response '%s': %v", idStr, err)
 		c.JSON(http.StatusBadRequest, clientError)
 		return
 	}
@@ -63,7 +72,7 @@ func queryHandler(c *gin.Context) {
 	logger.Printf("search result (sinceID: %d, maxID: %d)", r.SinceID, r.MaxID)
 	// save only if there were results
 	if r.MaxID > 0 {
-		err = saveLastID(queryKey, r.MaxID)
+		err = saveState(queryKey, r.MaxID)
 		if err != nil {
 			logger.Printf("error saving state: %v", err)
 			c.JSON(http.StatusInternalServerError, clientError)
