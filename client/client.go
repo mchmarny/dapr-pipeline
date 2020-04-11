@@ -12,22 +12,32 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	clientTimeout = time.Second * 30
-)
+// SimpleStateData represents simplified dapr state item
+type SimpleStateData struct {
+	Key     string              `json:"key"`
+	Value   interface{}         `json:"value"`
+	Options *SimpleStateOptions `json:"options,omitempty"`
+}
+
+// SimpleStateOptions is the dapr state data option for StateData
+type SimpleStateOptions struct {
+	Consistency string `json:"consistency,omitempty"`
+}
 
 // NewClient creates instance of Client
 func NewClient(baseURL string) (client *Client) {
 	return &Client{
-		BaseURL: baseURL,
-		StrongStateConsistency: true
+		BaseURL:                baseURL,
+		StrongStateConsistency: true,
+		Timeout:                time.Second * 30,
 	}
 }
 
 // Client is a simple HTTP client
 type Client struct {
-	BaseURL string
+	BaseURL                string
 	StrongStateConsistency bool
+	Timeout                time.Duration
 }
 
 // GetState gets content for specific key in state store
@@ -40,11 +50,7 @@ func (c *Client) GetState(store, key string) (data []byte, err error) {
 		req.Header.Set("consistency", "strong") // TODO: parameterize
 	}
 
-	client := &http.Client{
-		Timeout: clientTimeout,
-	}
-
-	resp, err := client.Do(req)
+	resp, err := newHTTPClient().Do(req)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error quering state service: %s", url)
 	}
@@ -73,21 +79,18 @@ func (c *Client) GetState(store, key string) (data []byte, err error) {
 // SaveState saves data into state store for specific key
 func (c *Client) SaveState(store, key string, data interface{}) error {
 
-	state := &StateData{
+	state := &SimpleStateData{
 		Key:     key,
 		Value:   data,
-		Options: &StateOptions{Consistency: "strong"},
+		Options: &SimpleStateOptions{Consistency: "strong"},
 	}
-	b, _ := json.Marshal([]*StateData{state})
+	b, _ := json.Marshal([]*SimpleStateData{state})
 
 	url := fmt.Sprintf("%s/v1.0/state/%s", c.baseURL, store)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{
-		Timeout: clientTimeout,
-	}
-	resp, err := client.Do(req)
+	resp, err := newHTTPClient().Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "error posting to %s with key: %s, data: %v", url, key, data)
 	}
@@ -114,10 +117,7 @@ func (c *Client) Publish(topic string, data interface{}) error {
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{
-		Timeout: clientTimeout,
-	}
-	resp, err := client.Do(req)
+	resp, err := newHTTPClient().Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "error publishing result %+v to %s", data, url)
 	}
@@ -135,14 +135,8 @@ func (c *Client) Publish(topic string, data interface{}) error {
 
 }
 
-// StateData represents ID state item in dapr
-type StateData struct {
-	Key     string        `json:"key"`
-	Value   interface{}   `json:"value"`
-	Options *StateOptions `json:"options,omitempty"`
-}
-
-// StateOptions is the dapr state data option for StateData
-type StateOptions struct {
-	Consistency string `json:"consistency,omitempty"`
+func newHTTPClient() *http.Client {
+	return &http.Client{
+		Timeout: c.Timeout,
+	}
 }
