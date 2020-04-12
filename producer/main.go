@@ -8,10 +8,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mchmarny/gcputil/env"
+
+	dapr "github.com/mchmarny/dapr-tweet-processing-pipeline/client"
 )
 
 var (
-	logger = log.New(os.Stdout, "", 0)
+	logger = log.New(os.Stdout, "PROVIDER == ", 0)
 
 	// service
 	servicePort    = env.MustGetEnvVar("PORT", "8080")
@@ -22,11 +24,11 @@ var (
 	consumerSecret = env.MustGetEnvVar("TW_CONSUMER_SECRET", "")
 
 	// dapr
-	daprPort = env.MustGetEnvVar("DAPR_HTTP_PORT", "3500")
-	stateURL = fmt.Sprintf("http://localhost:%s/v1.0/state/%s", daprPort,
-		env.MustGetEnvVar("DAPR_STORE_NAME", "statestore"))
-	busURL = fmt.Sprintf("http://localhost:%s/v1.0/publish/%s", daprPort,
-		env.MustGetEnvVar("DAPR_QUEUE_NAME", "messagebus"))
+	daprServer = fmt.Sprintf("http://localhost:%s", env.MustGetEnvVar("DAPR_HTTP_PORT", "3500"))
+	daprClient = dapr.NewClient(daprServer)
+
+	stateStore = env.MustGetEnvVar("STATE_STORE_NAME", "statestore")
+	eventTopic = env.MustGetEnvVar("EVENT_TOPIC_NAME", "messagebus")
 )
 
 func main() {
