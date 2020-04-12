@@ -11,4 +11,4 @@ go mod vendor
 dapr run --app-id processor \
          --app-port $PORT \
          --protocol http \
-         go run handler.go main.go
+         go run score.go handler.go main.go

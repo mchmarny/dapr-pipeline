@@ -153,7 +153,7 @@ func search(q *Query) (r *SearchResult, err error) {
 		t := &SimpleTweet{
 			ID:        s.ID,
 			Query:     q.Text,
-			Author:    strings.TrimSpace(strings.ToLower(s.User.ScreenName)),
+			Author:    strings.ToLower(s.User.ScreenName),
 			Content:   s.FullText,
 			Published: convertTwitterTime(s.CreatedAt),
 		}

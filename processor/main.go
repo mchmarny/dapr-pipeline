@@ -23,9 +23,9 @@ var (
 	daprServer = fmt.Sprintf("http://localhost:%s", env.MustGetEnvVar("DAPR_HTTP_PORT", "3500"))
 	daprClient = dapr.NewClient(daprServer)
 
-	sourceTopic   = env.MustGetEnvVar("PROCESSOR_SOURCE_TOPIC_NAME", "tweets")
-	positiveTopic = env.MustGetEnvVar("PROCESSOR_POSITIVE_TOPIC_NAME", "positive-tweets")
-	negativeTopic = env.MustGetEnvVar("PROCESSOR_NEGATIVE_TOPIC_NAME", "negative-tweets")
+	sourceTopic    = env.MustGetEnvVar("PROCESSOR_SOURCE_TOPIC_NAME", "tweets")
+	processedTopic = env.MustGetEnvVar("PROCESSOR_RESULT_TOPIC_NAME", "processed")
+	alertTopic     = env.MustGetEnvVar("PROCESSOR_ALERT_TOPIC_NAME", "alerts")
 )
 
 func main() {

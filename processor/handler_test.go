@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -42,14 +41,21 @@ func TestEventProcessorHandler(t *testing.T) {
 	r.POST("/", eventHandler)
 	w := httptest.NewRecorder()
 
-	msg := gin.H{
-		"k1": "v1",
-		"k2": "v2",
-		"ts": time.Now(),
-	}
-
-	data, err := json.Marshal(msg)
-	assert.Nil(t, err)
+	data := []byte(`{
+		"id":"eeda6273-7483-4d4a-b368-41edbde76257",
+		"source":"provider",
+		"type":"com.dapr.event.sent",
+		"specversion":"0.3",
+		"datacontenttype":"application/json",
+		"data":{
+			"id":1249435923240104999,
+			"query":"serverless",
+			"author":"test",
+			"content":"test message",
+			"published":"2020-04-12T20:35:12Z"
+		},
+		"subject":""
+	}`)
 
 	req, _ := http.NewRequest("POST", "/", bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
