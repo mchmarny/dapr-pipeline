@@ -9,7 +9,7 @@ DIR="$(dirname "$0")"
 go mod tidy
 go mod vendor
 
-git commit -m "client changes for ${RELEASE_VERSION}"
+# git commit -m "client changes for ${RELEASE_VERSION}"
 git tag $RELEASE_VERSION
 git push origin $RELEASE_VERSION
 

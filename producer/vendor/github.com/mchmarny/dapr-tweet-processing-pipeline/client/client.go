@@ -17,9 +17,13 @@ import (
 var (
 	logger             = log.New(os.Stdout, "CLIENT == ", 0)
 	defaultHTTPTimeout = time.Second * 30
+	defaultConsistency = "strong"     // override defaults (eventual)
+	defaultConcurrency = "last-write" // override defaults (first-write)
 )
 
-// NewClient creates instance of Client
+// NewClient creates valid instance of Client
+// baseURL (e.g. http://localhost:3500)
+// API version and function (state, publish) will be added by client
 func NewClient(baseURL string) (client *Client) {
 	return &Client{
 		BaseURL:     baseURL,
@@ -33,15 +37,25 @@ type Client struct {
 	HTTPTimeout time.Duration
 }
 
-// GetData gets content for specific key in state store
+// GetDataWithOptions gets content for specific key in state store
 // TODO: implement with StateOptions
-func (c *Client) GetData(store, key string) (data []byte, err error) {
+func (c *Client) GetDataWithOptions(store, key string, opt *StateOptions) (data []byte, err error) {
 
 	url := fmt.Sprintf("%s/v1.0/state/%s/%s", c.BaseURL, store, key)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("consistency", "strong")     // override defaults (eventual)
-	req.Header.Set("concurrency", "last-write") // override defaults (first-write)
+	req.Header.Set("consistency", defaultConsistency)
+	req.Header.Set("concurrency", defaultConcurrency)
+
+	if opt != nil && opt.Concurrency != "" {
+		req.Header.Set("concurrency", opt.Concurrency)
+	}
+
+	if opt != nil && opt.Consistency != "" {
+		req.Header.Set("consistency", opt.Consistency)
+	}
+
+	//TODO: Handle RetryPolicy
 
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
@@ -69,7 +83,13 @@ func (c *Client) GetData(store, key string) (data []byte, err error) {
 
 }
 
+// GetData gets content for specific key in state store
+func (c *Client) GetData(store, key string) (data []byte, err error) {
+	return c.GetDataWithOptions(store, key, nil)
+}
+
 // Save saves state data into state store
+// TODO: check result of publish and consider returning
 func (c *Client) Save(store string, data *StateData) error {
 
 	b, _ := json.Marshal([]*StateData{data})
@@ -116,6 +136,7 @@ func (c *Client) SaveData(store, key string, data interface{}) error {
 }
 
 // Publish serializes data to JSON and publishes it onto specified topic
+// TODO: check result of publish and consider returning
 func (c *Client) Publish(topic string, data interface{}) error {
 
 	url := fmt.Sprintf("%s/v1.0/publish/%s", c.BaseURL, topic)
@@ -132,8 +153,8 @@ func (c *Client) Publish(topic string, data interface{}) error {
 
 	logger.Printf("%s POST: %d (%s)", url, resp.StatusCode, http.StatusText(resp.StatusCode))
 
-	dump, _ := httputil.DumpResponse(resp, true)
 	if resp.StatusCode != http.StatusOK {
+		dump, _ := httputil.DumpResponse(resp, true)
 		return fmt.Errorf("invalid response code from POST to %s with result: %+v - %q",
 			url, data, dump)
 	}

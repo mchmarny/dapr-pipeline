@@ -15,34 +15,47 @@ import (
 )
 
 var (
-	logger = log.New(os.Stdout, "CLIENT == ", 0)
+	logger             = log.New(os.Stdout, "CLIENT == ", 0)
+	defaultHTTPTimeout = time.Second * 30
+	defaultConsistency = "strong"     // override defaults (eventual)
+	defaultConcurrency = "last-write" // override defaults (first-write)
 )
 
-// NewClient creates instance of Client
+// NewClient creates valid instance of Client
+// baseURL (e.g. http://localhost:3500)
+// API version and function (state, publish) will be added by client
 func NewClient(baseURL string) (client *Client) {
 	return &Client{
-		BaseURL:                baseURL,
-		StrongStateConsistency: true,
-		Timeout:                time.Second * 30,
+		BaseURL:     baseURL,
+		HTTPTimeout: defaultHTTPTimeout,
 	}
 }
 
 // Client is a simple HTTP client
 type Client struct {
-	BaseURL                string
-	StrongStateConsistency bool
-	Timeout                time.Duration
+	BaseURL     string
+	HTTPTimeout time.Duration
 }
 
-// GetState gets content for specific key in state store
-func (c *Client) GetState(store, key string) (data []byte, err error) {
+// GetDataWithOptions gets content for specific key in state store
+// TODO: implement with StateOptions
+func (c *Client) GetDataWithOptions(store, key string, opt *StateOptions) (data []byte, err error) {
 
 	url := fmt.Sprintf("%s/v1.0/state/%s/%s", c.BaseURL, store, key)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set("Content-Type", "application/json")
-	if c.StrongStateConsistency {
-		req.Header.Set("consistency", "strong") // TODO: parameterize
+	req.Header.Set("consistency", defaultConsistency)
+	req.Header.Set("concurrency", defaultConcurrency)
+
+	if opt != nil && opt.Concurrency != "" {
+		req.Header.Set("concurrency", opt.Concurrency)
 	}
+
+	if opt != nil && opt.Consistency != "" {
+		req.Header.Set("consistency", opt.Consistency)
+	}
+
+	//TODO: Handle RetryPolicy
 
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
@@ -70,18 +83,16 @@ func (c *Client) GetState(store, key string) (data []byte, err error) {
 
 }
 
-// SaveState saves data into state store for specific key
-func (c *Client) SaveState(store, key string, data interface{}) error {
+// GetData gets content for specific key in state store
+func (c *Client) GetData(store, key string) (data []byte, err error) {
+	return c.GetDataWithOptions(store, key, nil)
+}
 
-	state := &StateData{
-		Key:     key,
-		Value:   data,
-		Options: &StateOptions{Consistency: "strong"},
-		Metadata: map[string]string{
-			"created_on": time.Now().UTC().String(),
-		},
-	}
-	b, _ := json.Marshal([]*StateData{state})
+// Save saves state data into state store
+// TODO: check result of publish and consider returning
+func (c *Client) Save(store string, data *StateData) error {
+
+	b, _ := json.Marshal([]*StateData{data})
 
 	url := fmt.Sprintf("%s/v1.0/state/%s", c.BaseURL, store)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
@@ -89,7 +100,7 @@ func (c *Client) SaveState(store, key string, data interface{}) error {
 
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
-		return errors.Wrapf(err, "error posting to %s with key: %s, data: %v", url, key, data)
+		return errors.Wrapf(err, "error posting to %s with key: %s, data: %v", url, data.Key, data)
 	}
 	defer resp.Body.Close()
 
@@ -98,14 +109,34 @@ func (c *Client) SaveState(store, key string, data interface{}) error {
 	if resp.StatusCode != http.StatusCreated {
 		dump, _ := httputil.DumpResponse(resp, true)
 		return fmt.Errorf("invalid response code from POST to %s with key: %s, data: %v - %q",
-			url, key, data, dump)
+			url, data.Key, data, dump)
 	}
 
 	return nil
 
 }
 
+// SaveData saves data into state store for specific key
+func (c *Client) SaveData(store, key string, data interface{}) error {
+
+	state := &StateData{
+		Key:   key,
+		Value: data,
+		Options: &StateOptions{
+			Consistency: "strong",     // override default consistency (eventual)
+			Concurrency: "last-write", // override defaults (first-write)
+		},
+		Metadata: map[string]string{
+			"created_on": time.Now().UTC().String(),
+		},
+	}
+
+	return c.Save(store, state)
+
+}
+
 // Publish serializes data to JSON and publishes it onto specified topic
+// TODO: check result of publish and consider returning
 func (c *Client) Publish(topic string, data interface{}) error {
 
 	url := fmt.Sprintf("%s/v1.0/publish/%s", c.BaseURL, topic)
@@ -134,6 +165,6 @@ func (c *Client) Publish(topic string, data interface{}) error {
 
 func (c *Client) newHTTPClient() *http.Client {
 	return &http.Client{
-		Timeout: c.Timeout,
+		Timeout: c.HTTPTimeout,
 	}
 }

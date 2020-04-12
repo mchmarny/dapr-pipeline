@@ -3,10 +3,10 @@
 set -o errexit
 set -o pipefail
 
+export PORT=8082
+
 go mod tidy
 go mod vendor
-
-export PORT=8082
 
 dapr run --app-id processor \
          --app-port $PORT \
