@@ -44,7 +44,7 @@ func queryHandler(c *gin.Context) {
 		return
 	}
 
-	stateContent, err := daprClient.GetState(stateStore, queryKey)
+	stateContent, err := daprClient.GetData(stateStore, queryKey)
 	if err != nil {
 		logger.Printf("error retrieving state: %v", err)
 		c.JSON(http.StatusBadRequest, clientError)
@@ -73,7 +73,7 @@ func queryHandler(c *gin.Context) {
 	logger.Printf("new maxID: %t (%d)", r.MaxID > lastMaxID, r.MaxID-lastMaxID)
 	// save only if the new maxID is higher than the one already saved
 	if r.MaxID > lastMaxID {
-		err = daprClient.SaveState(stateStore, queryKey, r.MaxID)
+		err = daprClient.SaveData(stateStore, queryKey, r.MaxID)
 		if err != nil {
 			logger.Printf("error saving state: %v", err)
 			c.JSON(http.StatusInternalServerError, clientError)

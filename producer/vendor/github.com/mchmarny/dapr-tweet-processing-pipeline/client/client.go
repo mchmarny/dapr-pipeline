@@ -15,34 +15,33 @@ import (
 )
 
 var (
-	logger = log.New(os.Stdout, "CLIENT == ", 0)
+	logger             = log.New(os.Stdout, "CLIENT == ", 0)
+	defaultHTTPTimeout = time.Second * 30
 )
 
 // NewClient creates instance of Client
 func NewClient(baseURL string) (client *Client) {
 	return &Client{
-		BaseURL:                baseURL,
-		StrongStateConsistency: true,
-		Timeout:                time.Second * 30,
+		BaseURL:     baseURL,
+		HTTPTimeout: defaultHTTPTimeout,
 	}
 }
 
 // Client is a simple HTTP client
 type Client struct {
-	BaseURL                string
-	StrongStateConsistency bool
-	Timeout                time.Duration
+	BaseURL     string
+	HTTPTimeout time.Duration
 }
 
-// GetState gets content for specific key in state store
-func (c *Client) GetState(store, key string) (data []byte, err error) {
+// GetData gets content for specific key in state store
+// TODO: implement with StateOptions
+func (c *Client) GetData(store, key string) (data []byte, err error) {
 
 	url := fmt.Sprintf("%s/v1.0/state/%s/%s", c.BaseURL, store, key)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set("Content-Type", "application/json")
-	if c.StrongStateConsistency {
-		req.Header.Set("consistency", "strong") // TODO: parameterize
-	}
+	req.Header.Set("consistency", "strong")     // override defaults (eventual)
+	req.Header.Set("concurrency", "last-write") // override defaults (first-write)
 
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
@@ -70,18 +69,10 @@ func (c *Client) GetState(store, key string) (data []byte, err error) {
 
 }
 
-// SaveState saves data into state store for specific key
-func (c *Client) SaveState(store, key string, data interface{}) error {
+// Save saves state data into state store
+func (c *Client) Save(store string, data *StateData) error {
 
-	state := &StateData{
-		Key:     key,
-		Value:   data,
-		Options: &StateOptions{Consistency: "strong"},
-		Metadata: map[string]string{
-			"created_on": time.Now().UTC().String(),
-		},
-	}
-	b, _ := json.Marshal([]*StateData{state})
+	b, _ := json.Marshal([]*StateData{data})
 
 	url := fmt.Sprintf("%s/v1.0/state/%s", c.BaseURL, store)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
@@ -89,7 +80,7 @@ func (c *Client) SaveState(store, key string, data interface{}) error {
 
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
-		return errors.Wrapf(err, "error posting to %s with key: %s, data: %v", url, key, data)
+		return errors.Wrapf(err, "error posting to %s with key: %s, data: %v", url, data.Key, data)
 	}
 	defer resp.Body.Close()
 
@@ -98,10 +89,29 @@ func (c *Client) SaveState(store, key string, data interface{}) error {
 	if resp.StatusCode != http.StatusCreated {
 		dump, _ := httputil.DumpResponse(resp, true)
 		return fmt.Errorf("invalid response code from POST to %s with key: %s, data: %v - %q",
-			url, key, data, dump)
+			url, data.Key, data, dump)
 	}
 
 	return nil
+
+}
+
+// SaveData saves data into state store for specific key
+func (c *Client) SaveData(store, key string, data interface{}) error {
+
+	state := &StateData{
+		Key:   key,
+		Value: data,
+		Options: &StateOptions{
+			Consistency: "strong",     // override default consistency (eventual)
+			Concurrency: "last-write", // override defaults (first-write)
+		},
+		Metadata: map[string]string{
+			"created_on": time.Now().UTC().String(),
+		},
+	}
+
+	return c.Save(store, state)
 
 }
 
@@ -122,8 +132,8 @@ func (c *Client) Publish(topic string, data interface{}) error {
 
 	logger.Printf("%s POST: %d (%s)", url, resp.StatusCode, http.StatusText(resp.StatusCode))
 
+	dump, _ := httputil.DumpResponse(resp, true)
 	if resp.StatusCode != http.StatusOK {
-		dump, _ := httputil.DumpResponse(resp, true)
 		return fmt.Errorf("invalid response code from POST to %s with result: %+v - %q",
 			url, data, dump)
 	}
@@ -134,6 +144,6 @@ func (c *Client) Publish(topic string, data interface{}) error {
 
 func (c *Client) newHTTPClient() *http.Client {
 	return &http.Client{
-		Timeout: c.Timeout,
+		Timeout: c.HTTPTimeout,
 	}
 }
