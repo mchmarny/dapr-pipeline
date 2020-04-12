@@ -27,8 +27,8 @@ var (
 	daprServer = fmt.Sprintf("http://localhost:%s", env.MustGetEnvVar("DAPR_HTTP_PORT", "3500"))
 	daprClient = dapr.NewClient(daprServer)
 
-	stateStore = env.MustGetEnvVar("STATE_STORE_NAME", "statestore")
-	eventTopic = env.MustGetEnvVar("EVENT_TOPIC_NAME", "messagebus")
+	stateStore = env.MustGetEnvVar("PRODUCER_STATE_STORE_NAME", "producer")
+	eventTopic = env.MustGetEnvVar("PRODUCER_RESULT_TOPIC_NAME", "tweets")
 )
 
 func main() {

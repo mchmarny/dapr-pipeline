@@ -51,12 +51,13 @@ func queryHandler(c *gin.Context) {
 		return
 	}
 
-	idStr := string(stateContent) //HUCK: save as json object so can parse here
-	lastMaxID, err := strconv.ParseInt(idStr, 0, 64)
-	if err != nil {
-		logger.Printf("error parsing response '%s': %v", idStr, err)
-		c.JSON(http.StatusBadRequest, clientError)
-		return
+	var lastMaxID int64
+	if len(stateContent) > 0 {
+		idStr := string(stateContent) //HUCK: save as json object so can parse here
+		lastMaxID, err = strconv.ParseInt(idStr, 0, 64)
+		if err != nil {
+			logger.Printf("error parsing response '%s', using default %d: %v", idStr, lastMaxID, err)
+		}
 	}
 
 	logger.Printf("found last max ID: %d", lastMaxID)
@@ -69,9 +70,9 @@ func queryHandler(c *gin.Context) {
 		return
 	}
 
-	logger.Printf("search result (sinceID: %d, maxID: %d)", r.SinceID, r.MaxID)
-	// save only if there were results
-	if r.MaxID > 0 {
+	logger.Printf("new maxID: %t (%d)", r.MaxID > lastMaxID, r.MaxID-lastMaxID)
+	// save only if the new maxID is higher than the one already saved
+	if r.MaxID > lastMaxID {
 		err = daprClient.SaveState(stateStore, queryKey, r.MaxID)
 		if err != nil {
 			logger.Printf("error saving state: %v", err)

@@ -3,9 +3,12 @@
 set -o errexit
 set -o pipefail
 
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
 # user-query.json contants tokens so it's not cehcked into git
 # use simple-query.json as a templte and add your own Twitter tokens
 curl -d "@query/user-query.json" \
      -H "Content-type: application/json" \
-     "http://localhost:3500/v1.0/invoke/provider/method/query" \
+     "http://localhost:${DAPR_HTTP_PORT}/v1.0/invoke/provider/method/query" \
      | jq "."

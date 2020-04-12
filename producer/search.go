@@ -129,6 +129,7 @@ func search(q *Query) (r *SearchResult, err error) {
 		Lang:       q.Lang,
 		SinceID:    q.SinceID,
 		ResultType: "recent",
+		TweetMode:  "extended",
 	})
 
 	if err != nil {
@@ -144,11 +145,6 @@ func search(q *Query) (r *SearchResult, err error) {
 	}
 
 	for _, s := range search.Statuses {
-
-		// skip if not newer than the one already processed
-		if s.ID <= r.MaxID {
-			continue
-		}
 
 		// increment found count to comp to published later
 		r.Found++
@@ -169,7 +165,11 @@ func search(q *Query) (r *SearchResult, err error) {
 			return nil, err
 		}
 		// set if current tweet ID larger than the current max
-		r.MaxID = t.ID
+		// can't assume tweets arrive in latest last order
+		logger.Printf("new tweet: %t (%d)", t.ID > r.MaxID, t.ID-r.MaxID)
+		if t.ID > r.MaxID {
+			r.MaxID = t.ID
+		}
 
 		// increment published count
 		r.Published++

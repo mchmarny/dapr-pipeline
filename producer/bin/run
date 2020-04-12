@@ -3,15 +3,15 @@
 set -o errexit
 set -o pipefail
 
-export TW_CONSUMER_KEY="${TW_CONSUMER_KEY:-test-consumer-key}"
-export TW_CONSUMER_SECRET="${TW_CONSUMER_SECRET:-test-consumer-secret}"
+DIR="$(dirname "$0")"
+. "${DIR}/config"
 
 go mod tidy
 go mod vendor
 
-dapr run --app-id provider \
-         --app-port 8080 \
+dapr run --app-id $PROVIDER_APP_NAME \
+         --app-port $PORT \
          --protocol http \
          --max-concurrency 1 \
-         --port 3500 \
+         --port $DAPR_HTTP_PORT \
          go run search.go handler.go main.go
