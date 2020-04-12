@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+go mod tidy
+go mod vendor
+
+git commit -m "client changes for ${RELEASE_VERSION}"
+git tag $RELEASE_VERSION
+git push origin $RELEASE_VERSION
+
+
