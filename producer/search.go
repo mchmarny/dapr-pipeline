@@ -151,14 +151,21 @@ func search(q *Query) (r *SearchResult, err error) {
 		// increment found count to comp to published later
 		r.Found++
 
+		// filter out RT
+		// TODO: parameterize
+		if s.RetweetedStatus != nil {
+			logger.Printf("skipping RT: %s", s.FullText)
+			continue
+		}
+
 		// create simple tweet from status
 		t := &SimpleTweet{
 			ID:        s.ID,
 			Query:     q.Text,
 			Author:    strings.ToLower(s.User.ScreenName),
 			AuthorPic: s.User.ProfileImageURLHttps,
-			Content:   s.FullText,
 			Published: convertTwitterTime(s.CreatedAt),
+			Content:   s.FullText,
 		}
 
 		// publish simple tweet

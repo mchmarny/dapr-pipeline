@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+
+export PORT=8083
+
+go mod tidy
+go mod vendor
+
+go run -v handler.go main.go

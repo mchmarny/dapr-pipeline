@@ -22,12 +22,17 @@ window.onload = function () {
 
         sock = new WebSocket(wsURL);
 
+        var connDiv = document.getElementById("connection-status");
+        connDiv.innerText = "closed";
+
         sock.onopen = function () {
             console.log("connected to " + wsURL);
+            connDiv.innerText = "open";
         };
 
         sock.onclose = function (e) {
             console.log("connection closed (" + e.code + ")");
+            connDiv.innerText = "closed";
         };
 
         /*
@@ -49,9 +54,10 @@ window.onload = function () {
             console.log(t);
             var item = document.createElement("div");
             item.className = "item";
-            var tmsg = "<img src='" + t.author_pic + "'/><div class='item-text'><b>" +
-                t.author + ":</b> at " + t.published + "<br /><i>" + t.content + "</i>" +
-                "<img src='static/img/s" + t.sentiment + ".png' class='sentiment'/></div>";
+            var tmsg = "<img src='" + t.author_pic + "' class='profile-pic' />" +
+                "<div class='item-text'><b><img src='static/img/s" + t.sentiment +
+                ".png' class='sentiment' />" + t.author + "</b><br />" +
+                "<i>" + t.content + "</i></div>";
             item.innerHTML = tmsg
             appendLog(item);
         };
