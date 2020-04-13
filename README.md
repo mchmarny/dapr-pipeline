@@ -8,6 +8,8 @@ Example of Twitter event processing pipeline using dapr framework
 
 This pipeline exposes query API through which users can submit Twitter search requests. Each tweet matching that query is then analyzed for sentiment using a very simple probabalistic model and published to UI dashboard for viewing. Tweets considered to be negative are sent to an external alert API.
 
+> Note, the model used to score these tweets is vert basic. It was trained on IMDB movie reviews and it's used here purely for demo purposes.
+
 ## Prerequisites
 
 ### dapr
