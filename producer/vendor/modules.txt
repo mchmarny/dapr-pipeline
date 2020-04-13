@@ -38,7 +38,7 @@ github.com/json-iterator/go
 github.com/leodido/go-urn
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
-# github.com/mchmarny/dapr-pipeline/client v0.0.0-20200412211330-d1a4b0cca1fc => ../client
+# github.com/mchmarny/dapr-pipeline/client v0.2.1 => ../client
 ## explicit
 github.com/mchmarny/dapr-pipeline/client
 # github.com/mchmarny/gcputil v0.3.3
@@ -59,7 +59,7 @@ github.com/pmezard/go-difflib/difflib
 github.com/stretchr/testify/assert
 # github.com/ugorji/go/codec v1.1.7
 github.com/ugorji/go/codec
-# golang.org/x/sys v0.0.0-20200409092240-59c9f1ba88fa
+# golang.org/x/sys v0.0.0-20200413165638-669c56c373c4
 ## explicit
 golang.org/x/sys/unix
 # gopkg.in/yaml.v2 v2.2.8
