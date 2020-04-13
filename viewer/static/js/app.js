@@ -56,8 +56,10 @@ window.onload = function () {
             item.className = "item";
             var tmsg = "<img src='" + t.author_pic + "' class='profile-pic' />" +
                 "<div class='item-text'><b><img src='static/img/s" + t.sentiment +
-                ".png' class='sentiment' />" + t.author + "</b><br />" +
-                "<i>" + t.content + "</i></div>";
+                ".svg' alt='sentiment' class='sentiment' />" + t.author +
+                "<a href='https://twitter.com/" + t.author + "/status/" + t.id +
+                "' target='_blank'><img src='static/img/tw.svg' class='tweet-link' /></a></b>" +
+                "<br /><i>" + t.content + "</i></div>";
             item.innerHTML = tmsg
             appendLog(item);
         };

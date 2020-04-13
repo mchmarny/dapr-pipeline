@@ -99,10 +99,17 @@ div.item-text {
 }
 
 img.sentiment {
+	width: 20px;
+	height: 20px;
+	margin: 0 3px 0 0;
+	vertical-align: baseline;
+}
+
+img.tweet-link {
 	width: 25px;
 	height: 25px;
-	margin: 0 3px 0 0;
-	vertical-align: bottom;
+	margin: 0 0 0 3px;
+	vertical-align: baseline;
 }
 
 .error {

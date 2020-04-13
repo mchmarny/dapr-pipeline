@@ -79,7 +79,7 @@ func (q *Query) validate() error {
 // SimpleTweet represents the Twiter query result item
 type SimpleTweet struct {
 	// ID is the string representation of the tweet ID
-	ID int64 `json:"id"`
+	ID string `json:"id"`
 	// Query is the text of the original query
 	Query string `json:"query"`
 	// Author is the name of the tweet user
@@ -160,7 +160,7 @@ func search(q *Query) (r *SearchResult, err error) {
 
 		// create simple tweet from status
 		t := &SimpleTweet{
-			ID:        s.ID,
+			ID:        s.IDStr,
 			Query:     q.Text,
 			Author:    strings.ToLower(s.User.ScreenName),
 			AuthorPic: s.User.ProfileImageURLHttps,
@@ -176,9 +176,9 @@ func search(q *Query) (r *SearchResult, err error) {
 		}
 		// set if current tweet ID larger than the current max
 		// can't assume tweets arrive in latest last order
-		logger.Printf("new tweet: %t (%d)", t.ID > r.MaxID, t.ID-r.MaxID)
-		if t.ID > r.MaxID {
-			r.MaxID = t.ID
+		logger.Printf("new tweet: %t (%d)", s.ID > r.MaxID, s.ID-r.MaxID)
+		if s.ID > r.MaxID {
+			r.MaxID = s.ID
 		}
 
 		// increment published count

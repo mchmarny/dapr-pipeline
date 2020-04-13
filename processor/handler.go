@@ -110,7 +110,7 @@ func eventHandler(c *gin.Context) {
 // SimpleScoredTweet represents the the producer tweet plus the score
 type SimpleScoredTweet struct {
 	// ID is the string representation of the tweet ID
-	ID int64 `json:"id"`
+	ID string `json:"id"`
 	// Query is the text of the original query
 	Query string `json:"query"`
 	// Author is the name of the tweet user
