@@ -115,7 +115,7 @@ To view the final results (where each tweet's sentiment is scored), navigate to 
 
 ![](img/ui.png)
 
-The face, left to the tweet author username, is the indication of the sentiment, positive (![](viewer/static/img/s1.svg)) and negative (![](viewer/static/img/s0.svg)). The Twitter logo, right of the username, is the link to the specific tweet in the threat on https://twitter.com.
+The face, left to the tweet author username, is the indication of the sentiment, positive (![](viewer/static/img/s1.svg =25x25)) and negative (![](viewer/static/img/s0.svg | width=20)). The Twitter logo, right of the username, is the link to the specific tweet in the threat on https://twitter.com.
 
 > Note, the model used to score these tweets is basic. It was trained on IMDB movie reviews and it's used here purely for demo purposes.
 
