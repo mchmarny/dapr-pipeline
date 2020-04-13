@@ -1,9 +1,5 @@
 package client
 
-import (
-	"time"
-)
-
 // StateData represents simplified dapr state item
 type StateData struct {
 	Key      string            `json:"key"`
@@ -22,7 +18,7 @@ type StateOptions struct {
 
 // RetryPolicy holds the StateOptions retry policy
 type RetryPolicy struct {
-	Threshold int32         `json:"threshold,omitempty"`
-	Pattern   string        `json:"pattern,omitempty"`
-	Interval  time.Duration `json:"interval,omitempty"`
+	Threshold int32  `json:"threshold,omitempty"`
+	Pattern   string `json:"pattern,omitempty"`
+	Interval  int64  `json:"interval,omitempty"`
 }

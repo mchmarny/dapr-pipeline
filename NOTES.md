@@ -69,7 +69,3 @@ Also, on `POST` I sometimes get `Payment Required` error?
 ```shell
 http://localhost:3500/v1.0/state/producer POST: 402 (Payment Required)
 ```
-
-### State data
-
-The [doc](https://github.com/dapr/docs/tree/master/howto/stateful-replicated-service) doesn't seem clear. What's the thinking behind state data on post being an array? Given the value is an arbitrary type users can set set it to array and avoid needing to create and parse slices on the more common use-case of single item.

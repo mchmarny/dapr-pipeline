@@ -15,10 +15,14 @@ import (
 )
 
 var (
-	logger             = log.New(os.Stdout, "CLIENT == ", 0)
-	defaultHTTPTimeout = time.Second * 30
-	defaultConsistency = "strong"     // override defaults (eventual)
-	defaultConcurrency = "last-write" // override defaults (first-write)
+	logger = log.New(os.Stdout, "CLIENT == ", 0)
+
+	DefaultHTTPTimeout          = time.Second * 30
+	DefaultConsistency          = "strong"     // override defaults (eventual)
+	DefaultConcurrency          = "last-write" // override defaults (first-write)
+	DefaultRetryPolicyInterval  = 100
+	DefaultRetryPolicyThreshold = 3
+	DefaultRetryPolicyPattern   = "exponential"
 )
 
 // NewClient creates valid instance of Client
@@ -27,7 +31,7 @@ var (
 func NewClient(baseURL string) (client *Client) {
 	return &Client{
 		BaseURL:     baseURL,
-		HTTPTimeout: defaultHTTPTimeout,
+		HTTPTimeout: DefaultHTTPTimeout,
 	}
 }
 
@@ -44,8 +48,8 @@ func (c *Client) GetDataWithOptions(store, key string, opt *StateOptions) (data 
 	url := fmt.Sprintf("%s/v1.0/state/%s/%s", c.BaseURL, store, key)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("consistency", defaultConsistency)
-	req.Header.Set("concurrency", defaultConcurrency)
+	req.Header.Set("consistency", DefaultConsistency)
+	req.Header.Set("concurrency", DefaultConcurrency)
 
 	if opt != nil && opt.Concurrency != "" {
 		req.Header.Set("concurrency", opt.Concurrency)
