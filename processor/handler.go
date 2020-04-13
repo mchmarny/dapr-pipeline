@@ -115,6 +115,8 @@ type SimpleScoredTweet struct {
 	Query string `json:"query"`
 	// Author is the name of the tweet user
 	Author string `json:"author"`
+	// AuthorPic is the url to author profile pic
+	AuthorPic string `json:"author_pic"`
 	// Content is the full text body of the tweet
 	Content string `json:"content"`
 	// ContentSentiment indicates whether the content is positive (true) or negative (false)

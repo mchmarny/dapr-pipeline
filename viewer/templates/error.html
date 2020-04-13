@@ -1,0 +1,28 @@
+{{ define "error" }}
+
+{{ template "header" . }}
+
+<!-- Header -->
+<div id="page-header">
+    <div id="page-header-image">
+        <img src="static/img/knative-logo.png" />
+    </div>
+    <div id="page-header-title">
+        GAuth on Knative
+    </div>
+</div>
+
+
+<div id="middle-section">
+    {{if .error}}
+
+    <div class="error">
+        <h3>{{.status_code}} - {{.status}}</h3>
+        <p>{{.error}}</p>
+    </div>
+
+    {{end}}
+</div>
+{{ template "footer" . }}
+
+{{ end }}

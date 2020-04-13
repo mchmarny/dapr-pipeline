@@ -84,6 +84,8 @@ type SimpleTweet struct {
 	Query string `json:"query"`
 	// Author is the name of the tweet user
 	Author string `json:"author"`
+	// AuthorPic is the url to author profile pic
+	AuthorPic string `json:"author_pic"`
 	// Content is the full text body of the tweet
 	Content string `json:"content"`
 	// Published is the parsed tweet create timestamp
@@ -154,6 +156,7 @@ func search(q *Query) (r *SearchResult, err error) {
 			ID:        s.ID,
 			Query:     q.Text,
 			Author:    strings.ToLower(s.User.ScreenName),
+			AuthorPic: s.User.ProfileImageURLHttps,
 			Content:   s.FullText,
 			Published: convertTwitterTime(s.CreatedAt),
 		}
