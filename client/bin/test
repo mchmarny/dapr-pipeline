@@ -3,9 +3,6 @@
 set -o errexit
 set -o pipefail
 
-DIR="$(dirname "$0")"
-. "${DIR}/config"
-
 go mod tidy
 go mod vendor
 
