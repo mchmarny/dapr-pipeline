@@ -94,7 +94,7 @@ func eventHandler(c *gin.Context) {
 
 	// if negative then send alert
 	if t.ContentSentiment == negativeSentimentScore {
-		if err := daprClient.Sent(alertBinding, t); err != nil {
+		if err := daprClient.Send(alertBinding, t); err != nil {
 			logger.Printf("error on sendign alert to binding %v: %v", alertBinding, err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":   "Server Error",

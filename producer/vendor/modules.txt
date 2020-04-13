@@ -38,12 +38,12 @@ github.com/json-iterator/go
 github.com/leodido/go-urn
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
-# github.com/mchmarny/dapr-pipeline/client v0.2.1 => ../client
-## explicit
-github.com/mchmarny/dapr-pipeline/client
 # github.com/mchmarny/gcputil v0.3.3
 ## explicit
 github.com/mchmarny/gcputil/env
+# github.com/mchmarny/godapr v0.2.2 => ../../godapr
+## explicit
+github.com/mchmarny/godapr
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 ## explicit
 github.com/modern-go/concurrent
@@ -64,4 +64,4 @@ github.com/ugorji/go/codec
 golang.org/x/sys/unix
 # gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
-# github.com/mchmarny/dapr-pipeline/client => ../client
+# github.com/mchmarny/godapr => ../../godapr
