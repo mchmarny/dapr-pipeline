@@ -91,6 +91,7 @@ bin/invoke
 
 Alternatively, you can submit query using the `curl`
 
+```shell
 curl -d "@path/to/user/query.json" \
      -H "Content-type: application/json" \
      "http://localhost:${DAPR_HTTP_PORT}/v1.0/invoke/provider/method/query"
