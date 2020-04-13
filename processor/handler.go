@@ -36,7 +36,7 @@ func eventHandler(c *gin.Context) {
 	e := ce.NewEvent()
 	if err := c.ShouldBindJSON(&e); err != nil {
 		logger.Printf("error binding event: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Bad Request",
 			"message": "Error processing your request, see logs for details",
 		})
@@ -48,7 +48,7 @@ func eventHandler(c *gin.Context) {
 	eventVersion := e.Context.GetSpecVersion()
 	if eventVersion != SupportedCloudEventVersion {
 		logger.Printf("invalid event spec version: %s", eventVersion)
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Bad Request",
 			"message": fmt.Sprintf("Invalid spec version (want: %s got: %s)",
 				SupportedCloudEventVersion, eventVersion),
@@ -59,7 +59,7 @@ func eventHandler(c *gin.Context) {
 	eventContentType := e.Context.GetDataContentType()
 	if eventContentType != SupportedCloudEventContentTye {
 		logger.Printf("invalid event content type: %s", eventContentType)
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Bad Request",
 			"message": fmt.Sprintf("Invalid content type (want: %s got: %s)",
 				SupportedCloudEventContentTye, eventContentType),
@@ -70,7 +70,7 @@ func eventHandler(c *gin.Context) {
 	var t SimpleScoredTweet
 	if err := json.Unmarshal(e.Data(), &t); err != nil {
 		logger.Printf("error parsing event content: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Bad Request",
 			"message": "Invalid content payload, see log processor log for details",
 		})
