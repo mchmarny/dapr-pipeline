@@ -1,4 +1,4 @@
-module github.com/mchmarny/dapr-tweet-processing-pipeline/viewer
+module github.com/mchmarny/dapr-pipeline/viewer
 
 go 1.14
 

@@ -1,4 +1,4 @@
-module github.com/mchmarny/dapr-tweet-processing-pipeline/client
+module github.com/mchmarny/dapr-pipeline/client
 
 go 1.14
 

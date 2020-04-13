@@ -1,6 +1,0 @@
-# dapr HTTP client
-
-
-
-## Versioning
-

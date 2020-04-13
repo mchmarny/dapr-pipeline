@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mchmarny/gcputil/env"
 
-	dapr "github.com/mchmarny/dapr-tweet-processing-pipeline/client"
+	dapr "github.com/mchmarny/dapr-pipeline/client"
 )
 
 var (

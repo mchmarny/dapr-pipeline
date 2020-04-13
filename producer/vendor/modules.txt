@@ -38,9 +38,9 @@ github.com/json-iterator/go
 github.com/leodido/go-urn
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
-# github.com/mchmarny/dapr-tweet-processing-pipeline/client v0.0.0-20200412211330-d1a4b0cca1fc => ../client
+# github.com/mchmarny/dapr-pipeline/client v0.0.0-20200412211330-d1a4b0cca1fc => ../client
 ## explicit
-github.com/mchmarny/dapr-tweet-processing-pipeline/client
+github.com/mchmarny/dapr-pipeline/client
 # github.com/mchmarny/gcputil v0.3.3
 ## explicit
 github.com/mchmarny/gcputil/env
@@ -64,4 +64,4 @@ github.com/ugorji/go/codec
 golang.org/x/sys/unix
 # gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
-# github.com/mchmarny/dapr-tweet-processing-pipeline/client => ../client
+# github.com/mchmarny/dapr-pipeline/client => ../client
