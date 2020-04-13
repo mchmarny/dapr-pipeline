@@ -89,31 +89,10 @@ func (c *Client) GetData(store, key string) (data []byte, err error) {
 }
 
 // Save saves state data into state store
-// TODO: check result of publish and consider returning
 func (c *Client) Save(store string, data *StateData) error {
-
-	b, _ := json.Marshal([]*StateData{data})
-
+	list := []*StateData{data}
 	url := fmt.Sprintf("%s/v1.0/state/%s", c.BaseURL, store)
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.newHTTPClient().Do(req)
-	if err != nil {
-		return errors.Wrapf(err, "error posting to %s with key: %s, data: %v", url, data.Key, data)
-	}
-	defer resp.Body.Close()
-
-	logger.Printf("%s POST: %d (%s)", url, resp.StatusCode, http.StatusText(resp.StatusCode))
-
-	if resp.StatusCode != http.StatusCreated {
-		dump, _ := httputil.DumpResponse(resp, true)
-		return fmt.Errorf("invalid response code from POST to %s with key: %s, data: %v - %q",
-			url, data.Key, data, dump)
-	}
-
-	return nil
-
+	return c.post(url, list)
 }
 
 // SaveData saves data into state store for specific key
@@ -136,10 +115,18 @@ func (c *Client) SaveData(store, key string, data interface{}) error {
 }
 
 // Publish serializes data to JSON and publishes it onto specified topic
-// TODO: check result of publish and consider returning
 func (c *Client) Publish(topic string, data interface{}) error {
-
 	url := fmt.Sprintf("%s/v1.0/publish/%s", c.BaseURL, topic)
+	return c.post(url, data)
+}
+
+// Send serializes data to JSON and submits to specific binding
+func (c *Client) Send(binding string, data interface{}) error {
+	url := fmt.Sprintf("%s/v1.0/bindings/%s", c.BaseURL, binding)
+	return c.post(url, data)
+}
+
+func (c *Client) post(url string, data interface{}) error {
 
 	b, _ := json.Marshal(data)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
@@ -147,13 +134,13 @@ func (c *Client) Publish(topic string, data interface{}) error {
 
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
-		return errors.Wrapf(err, "error publishing result %+v to %s", data, url)
+		return errors.Wrapf(err, "error posting %+v to %s", data, url)
 	}
 	defer resp.Body.Close()
 
 	logger.Printf("%s POST: %d (%s)", url, resp.StatusCode, http.StatusText(resp.StatusCode))
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		dump, _ := httputil.DumpResponse(resp, true)
 		return fmt.Errorf("invalid response code from POST to %s with result: %+v - %q",
 			url, data, dump)

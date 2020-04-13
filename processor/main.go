@@ -25,7 +25,7 @@ var (
 
 	sourceTopic    = env.MustGetEnvVar("PROCESSOR_SOURCE_TOPIC_NAME", "tweets")
 	processedTopic = env.MustGetEnvVar("PROCESSOR_RESULT_TOPIC_NAME", "processed")
-	alertTopic     = env.MustGetEnvVar("PROCESSOR_ALERT_TOPIC_NAME", "alerts")
+	alertBinding   = env.MustGetEnvVar("PROCESSOR_ALERT_BINDING_NAME", "alert")
 )
 
 func main() {
