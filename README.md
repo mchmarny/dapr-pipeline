@@ -1,7 +1,6 @@
-# dapr-tweet-processing-pipeline
+# dapr-pipeline
 
-Example of Twitter event processing pipeline
-
+Example of Twitter event processing pipeline using dapr framewrk 
 
 ## Questions/Friction/Comments
 
