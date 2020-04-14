@@ -1,10 +1,10 @@
 #!/bin/bash
 
-export TW_CONSUMER_KEY="${TW_CONSUMER_KEY:-test-consumer-key}"
-export TW_CONSUMER_SECRET="${TW_CONSUMER_SECRET:-test-consumer-secret}"
-
 set -o errexit
 set -o pipefail
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
 
 go mod tidy
 go mod vendor
