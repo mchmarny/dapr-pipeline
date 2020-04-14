@@ -15,9 +15,11 @@ import (
 var (
 	logger = log.New(os.Stdout, "PROVIDER == ", 0)
 
+	// AppVersion will be overritten during build
+	AppVersion = "v0.0.1-default"
+
 	// service
-	servicePort    = env.MustGetEnvVar("PORT", "8081")
-	serviceVersion = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
+	servicePort = env.MustGetEnvVar("PORT", "8081")
 
 	// twitter
 	consumerKey    = env.MustGetEnvVar("TW_CONSUMER_KEY", "")

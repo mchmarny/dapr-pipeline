@@ -21,7 +21,7 @@ var (
 
 func defaultHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"release":      serviceVersion,
+		"release":      AppVersion,
 		"request_on":   time.Now(),
 		"request_from": c.Request.RemoteAddr,
 	})

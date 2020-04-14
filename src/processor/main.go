@@ -15,9 +15,11 @@ import (
 var (
 	logger = log.New(os.Stdout, "PROCESSOR == ", 0)
 
+	// AppVersion will be overritten during build
+	AppVersion = "v0.0.1-default"
+
 	// service
-	servicePort    = env.MustGetEnvVar("PORT", "8082")
-	serviceVersion = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
+	servicePort = env.MustGetEnvVar("PORT", "8082")
 
 	// dapr
 	daprServer = fmt.Sprintf("http://localhost:%s", env.MustGetEnvVar("DAPR_HTTP_PORT", "3500"))

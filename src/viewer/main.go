@@ -15,9 +15,11 @@ import (
 var (
 	logger = log.New(os.Stdout, "VIEWER == ", 0)
 
+	// AppVersion will be overritten during build
+	AppVersion = "v0.0.1-default"
+
 	// service
-	servicePort    = env.MustGetEnvVar("PORT", "8083")
-	serviceVersion = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
+	servicePort = env.MustGetEnvVar("PORT", "8083")
 
 	sourceTopic = env.MustGetEnvVar("VIEWER_SOURCE_TOPIC_NAME", "processed")
 

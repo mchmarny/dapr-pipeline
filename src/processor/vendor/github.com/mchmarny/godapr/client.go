@@ -17,12 +17,18 @@ import (
 var (
 	logger = log.New(os.Stdout, "CLIENT == ", 0)
 
-	DefaultHTTPTimeout          = time.Second * 30
-	DefaultConsistency          = "strong"     // override defaults (eventual)
-	DefaultConcurrency          = "last-write" // override defaults (first-write)
-	DefaultRetryPolicyInterval  = 100
+	// DefaultHTTPTimeout is the default HTTP client timeout
+	DefaultHTTPTimeout = time.Second * 30
+	// DefaultConsistency is the state store consistency option setting
+	DefaultConsistency = "strong" // override defaults (eventual)
+	// DefaultConcurrency is the state store concurrency option setting
+	DefaultConcurrency = "last-write" // override defaults (first-write)
+	// DefaultRetryPolicyInterval is the state store retry policy interval setting
+	DefaultRetryPolicyInterval = 100
+	// DefaultRetryPolicyThreshold is the state store retry policy threshold setting
 	DefaultRetryPolicyThreshold = 3
-	DefaultRetryPolicyPattern   = "exponential"
+	// DefaultRetryPolicyPattern is the state store retry policy pattern setting
+	DefaultRetryPolicyPattern = "exponential"
 )
 
 // NewClient creates valid instance of Client

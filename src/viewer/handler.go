@@ -32,7 +32,7 @@ func rootHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "index", gin.H{
 		"host":    c.Request.Host,
 		"proto":   proto,
-		"version": serviceVersion,
+		"version": AppVersion,
 	})
 
 }

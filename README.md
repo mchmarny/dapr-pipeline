@@ -4,7 +4,7 @@ Example of Twitter event processing pipeline using dapr framework.
 
 ![alt text](content/image/pipeline.svg "Pipeline Overview")
 
-> I built this pipeline as a means of learning dapr. I suspect in few places I'm not following the best practices. Please, do open an issue if you find something.
+> I built this pipeline as a way of learning dapr. Please, do open an issue if you find a bug or where I'm not following the best practices.
 
 ## What does it do
 
@@ -36,6 +36,8 @@ and then navigate into the `dapr-pipeline` directory:
 cd dapr-pipeline
 ```
 
+> Not, while this demo has been written in `go` you don't need to have go installed to run it. There are pre-built executables for Mac, Windows and Linux. If you are on Mac, just follow this README as is. If you are on another OS, just append the OS name to the executable in each `run` command (e.g. for Linux `bin/producer-linux` and for Windows `bin/producer-windows`).
+
 ## How to
 
 This pipeline consists of three microservices: Provider, Processor, and Viewer. In the `dapr-pipeline` directory follow these instructions on launching each one of these services:
@@ -52,6 +54,8 @@ export TW_ACCESS_SECRET="..."
 ```
 
 Once the Twitter API consumer and access details are set, you are ready to run the `provider`:
+
+> For environments other than mac you will have to append the OS name to the executable to each one of the `run` commands (e.g. for Linux `bin/producer-linux` and for Windows `bin/producer-windows`)
 
 ```shell
 dapr run bin/producer \
