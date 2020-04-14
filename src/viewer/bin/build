@@ -12,4 +12,4 @@ go build -a -tags netgo \
     -o ../../bin/viewer
 
 # copy all resources
-yes | cp -rf ./resource ../../resource
+yes | cp -rf ./resource ../../content/resource

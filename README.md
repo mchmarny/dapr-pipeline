@@ -2,7 +2,7 @@
 
 Example of Twitter event processing pipeline using dapr framework.
 
-![alt text](resource/img/pipeline.svg "Pipeline Overview")
+![alt text](content/image/pipeline.svg "Pipeline Overview")
 
 > I built this pipeline as a means of learning dapr. I suspect in few places I'm not following the best practices. Please, do open an issue if you find something.
 
@@ -109,11 +109,11 @@ Just like with the previous two, you will see this on successful start:
 
 Once all three microservices are running, you can launch the `viewer` dashboard by navigating in your browser to http://localhost:8083/
 
-![](img/ui.png)
+![](content/image/ui.png)
 
 > Note, the model used to score these tweets is basic. It was trained on IMDB movie reviews and it's used here purely for demo purposes.
 
-Once we submit queries, you will see each tweet with its sentiment scored listed here. The icon left of the tweet author's username will indicate the sentiment (positive <img src="resource/static/img/s1.svg" width="25" style="vertical-align:middle"> and negative <img src="resource/static/img/s0.svg" width="25" style="vertical-align:middle">). The Twitter logo, right of the username, can will provide a link to the original tweet on https://twitter.com.
+Once we submit queries, you will see each tweet with its sentiment scored listed here. The icon left of the tweet author's username will indicate the sentiment (positive <img src="content/resource/static/img/s1.svg" width="25" style="vertical-align:middle"> and negative <img src="content/resource/static/img/s0.svg" width="25" style="vertical-align:middle">). The Twitter logo, right of the username, can will provide a link to the original tweet on https://twitter.com.
 
 ### Query
 
