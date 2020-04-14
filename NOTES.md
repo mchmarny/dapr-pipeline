@@ -4,9 +4,13 @@ Log for questions, friction, and comments
 
 ## tl;dr
 
+* Intuitive API with easy to navigate docs
+* Relation of components to core functionality (e.g. state, topic publishing) not always clear (auto-generated on run, not priori)
+* Idiomatic developer experience, with a few exceptions (e.g. topic sub)
+
 ## notes
 
-These notes are listed in order in which the came up, as in chronologically, not stack ranked.
+These notes cover only local development and are listed in order in which the came up, as in chronologically, not stack ranked.
 
 ### Invoke with payload vs string
 
