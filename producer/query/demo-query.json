@@ -1,6 +1,4 @@
 {
-    "text": "java",
-    "user": "dapr",
-    "token": "test",
-    "secret": "test"
+    "query": "serverless OR faas OR lambda OR dapr",
+    "lang": "en"
 }

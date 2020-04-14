@@ -9,12 +9,9 @@ import (
 func TestParsingQueryKey(t *testing.T) {
 
 	q := &Query{
-		Text:     "dapr",
-		Lang:     "en",
-		Count:    100,
-		Username: "test",
-		Token:    "test",
-		Secret:   "test",
+		Query: "dapr",
+		Lang:  "en",
+		Count: 100,
 	}
 	key1, err := parseQueryKey(q)
 	assert.Nil(t, err)

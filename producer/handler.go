@@ -81,6 +81,9 @@ func queryHandler(c *gin.Context) {
 		}
 	}
 
+	// update the results with query key
+	r.QueryKey = queryKey
+
 	c.JSON(http.StatusOK, r)
 }
 
@@ -90,18 +93,11 @@ func parseQueryKey(q *Query) (key string, err error) {
 		return "", errors.New("nil query pointer")
 	}
 
-	if q.Text == "" {
+	if q.Query == "" {
 		return "", errors.New("empty query text")
 	}
 
-	if q.Username == "" {
-		return "", errors.New("empty query username")
-	}
-
-	rawKey := fmt.Sprintf("u:%s|t:%s", q.Username, q.Text)
-	// logger.Printf("raw key: %s", rawKey)
-
-	hashedKey := fmt.Sprintf("qk-%s", toMD5Hash(rawKey))
+	hashedKey := fmt.Sprintf("qk-%s", toMD5Hash(q.Query))
 	// logger.Printf("hashed key: %s", hashedKey)
 
 	return hashedKey, nil

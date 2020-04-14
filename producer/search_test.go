@@ -11,11 +11,8 @@ func TestSimpleSearch(t *testing.T) {
 	count := 50
 
 	q := &Query{
-		Text:     "test",
-		Username: "test",
-		Token:    "test",
-		Secret:   "test",
-		Count:    count,
+		Query: "test",
+		Count: count,
 	}
 
 	list, err := search(q)
@@ -31,11 +28,8 @@ func TestSearchErrors(t *testing.T) {
 
 	tooHighCount := maxTweets + 1
 	q := &Query{
-		Text:     "test",
-		Username: "test",
-		Token:    "test",
-		Secret:   "test",
-		Count:    tooHighCount,
+		Query: "test",
+		Count: tooHighCount,
 	}
 
 	_, err = search(q)

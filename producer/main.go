@@ -22,6 +22,8 @@ var (
 	// twitter
 	consumerKey    = env.MustGetEnvVar("TW_CONSUMER_KEY", "")
 	consumerSecret = env.MustGetEnvVar("TW_CONSUMER_SECRET", "")
+	accessToken    = env.MustGetEnvVar("TW_ACCESS_TOEKN", "")
+	accessSecret   = env.MustGetEnvVar("TW_ACCESS_SECRET", "")
 
 	// dapr
 	daprServer = fmt.Sprintf("http://localhost:%s", env.MustGetEnvVar("DAPR_HTTP_PORT", "3500"))

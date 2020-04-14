@@ -16,9 +16,9 @@ const (
 // Query represents Twitter search query in specific user context
 type Query struct {
 
-	// Text is the full text of the Twitter search query including operators
+	// Query is the full text of the Twitter search query including operators
 	// e.g. 'dapr AND microsoft'
-	Text string `json:"text"`
+	Query string `json:"query"`
 
 	// Lang is the ISO 639-1 code which will be used to filter tweets
 	Lang string `json:"lang"`
@@ -29,33 +29,12 @@ type Query struct {
 	// SinceID is the id of the tweet to start search from
 	// Set to the last tweet returned by this query in handler
 	SinceID int64 `json:"-"`
-
-	// Username is the Twitter username who's Token/Secrets are assciated with
-	Username string `json:"user"`
-
-	// Token is the Twitter AccessTokenKey
-	Token string `json:"token"`
-
-	// Secret is the Twitter AccessTokenSecrets
-	Secret string `json:"secret"`
 }
 
 func (q *Query) validate() error {
 
-	if q.Text == "" {
-		return errors.New("empty search query text")
-	}
-
-	if q.Username == "" {
-		return errors.New("empty search query user")
-	}
-
-	if q.Token == "" {
-		return errors.New("empty search query token")
-	}
-
-	if q.Secret == "" {
-		return errors.New("empty search query secret")
+	if q.Query == "" {
+		return errors.New("empty search query")
 	}
 
 	if q.Count == 0 {
@@ -66,10 +45,6 @@ func (q *Query) validate() error {
 		logger.Printf("invalid query.count (want: 0-%d, got: %d), re-setting to max: %d",
 			maxTweets, q.Count, maxTweets)
 		q.Count = maxTweets
-	}
-
-	if q.Lang == "" {
-		q.Lang = "en"
 	}
 
 	return nil
@@ -100,6 +75,8 @@ type SearchResult struct {
 	MaxID int64 `json:"max_id"`
 	// Query is the text of the search query
 	Query string `json:"query"`
+	// QueryKey is MD5 hash of the query
+	QueryKey string `json:"query_key"`
 	// Found is the number of items returned by search
 	Found int `json:"items_found"`
 	// Published is the number of items published
@@ -119,14 +96,14 @@ func search(q *Query) (r *SearchResult, err error) {
 	}
 
 	config := oauth1.NewConfig(consumerKey, consumerSecret)
-	token := oauth1.NewToken(q.Token, q.Secret)
+	token := oauth1.NewToken(accessToken, accessSecret)
 
 	httpClient := config.Client(oauth1.NoContext, token)
 	tc := twitter.NewClient(httpClient)
 
 	// logger.Printf("searching for '%s' since id: %d", q.Text, q.SinceID)
 	search, resp, err := tc.Search.Tweets(&twitter.SearchTweetParams{
-		Query:      q.Text,
+		Query:      q.Query,
 		Count:      maxTweets,
 		Lang:       q.Lang,
 		SinceID:    q.SinceID,
@@ -161,7 +138,7 @@ func search(q *Query) (r *SearchResult, err error) {
 		// create simple tweet from status
 		t := &SimpleTweet{
 			ID:        s.IDStr,
-			Query:     q.Text,
+			Query:     q.Query,
 			Author:    strings.ToLower(s.User.ScreenName),
 			AuthorPic: s.User.ProfileImageURLHttps,
 			Published: convertTwitterTime(s.CreatedAt),

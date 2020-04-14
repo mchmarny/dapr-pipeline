@@ -35,11 +35,13 @@ This pipeline comprises three microservices: Provider, Processor, and Viewer. Su
 
 ### Provider
 
-First, you will need to export your Twitter consumer keys obtained in [Prerequisites](#prerequisites) section
+First, you will need to export your Twitter consumer and access keys obtained in [Prerequisites](#prerequisites) section
 
 ```shell
 export TW_CONSUMER_KEY="..."
 export TW_CONSUMER_SECRET="..."
+export TW_ACCESS_TOEKN="..."
+export TW_ACCESS_SECRET="..."
 ```
 
 Once set, you are ready to run the provider. `cd` into the `producer` directory and execute `bin/run` command
@@ -69,19 +71,10 @@ bin/run
 
 ### Query
 
-Once all three microservices are running, you are ready to submit query. The query payload is defined by:
-
-* `text` - search term you want to execute (e.g. `serverless`). This can be a complex query with `AND` or `OR` operators (e.g. `serverless OR dapr BUT NOT faas`)
-* `user` - twitter username to whom the query credentials belong
-* `token` and `secret` - are the consumer API keys. This allows the same pipeline to be used for multiple users with different credentials and API query limits
+Once all three microservices are running, you are ready to submit query. At minimum, query payload is defined by `text` which is search term you want to execute (e.g. `serverless`). This can be a complex query with `AND` or `OR` operators (e.g. `serverless OR dapr BUT NOT faas`). Query also supports other optional parameters like language (`lang`, e.g. `en`) or maximum number of tweets to return (`count`, maximum `100`).
 
 ```json
-{
-    "text": "serverless OR dapr",
-    "user": "dapr",
-    "token": "A9***************whrb",
-    "secret": "4v**********************GNB0"
-}
+{ "query": "serverless OR faas OR lambda OR dapr" }
 ```
 
 Once your query file is ready (e.g. `producer/query/demo-query.json`), switch back to the `producer` directory in a yet another terminal window and execute `bin/invoke`command.
@@ -94,7 +87,7 @@ bin/invoke
 Alternatively, you can submit query using the `curl`
 
 ```shell
-curl -d "@path/to/user/query.json" \
+curl -d "@query/demo-query.json" \
      -H "Content-type: application/json" \
      "http://localhost:${DAPR_HTTP_PORT}/v1.0/invoke/provider/method/query"
 ```
@@ -104,13 +97,16 @@ The result should look something like this
 ```json
 {
   "since_id": 0,
-  "max_id": 1249755795732017200,
-  "query": "serverless OR azure",
+  "max_id": 1250069062870274000,
+  "query": "serverless+OR+faas+OR+lambda+OR+dapr",
+  "query_key": "qk-5f75e45c14cfa5ddb4994b3aaec1a1a3",
   "items_found": 100,
-  "items_published": 54,
-  "search_duration": 0.088
+  "items_published": 18,
+  "search_duration": 0.182
 }
 ```
+
+This being the first query, the `since_id` will be `0`. The `max_id` is the last tweet ID which will become the `since_id` on the next query. The `items_published` will be lower than `items_found` because the provider filters out re-tweets (RT).
 
 ### UI
 

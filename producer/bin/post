@@ -3,6 +3,6 @@
 set -o errexit
 set -o pipefail
 
-curl -d "@query/simple-query.json" \
+curl -d "@query/demo-query.json" \
      -H "Content-type: application/json" \
      "http://localhost:8080/v1/query"
