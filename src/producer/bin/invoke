@@ -8,5 +8,5 @@ DIR="$(dirname "$0")"
 
 curl -d "@query/demo-query.json" \
      -H "Content-type: application/json" \
-     "http://localhost:${DAPR_HTTP_PORT}/v1.0/invoke/provider/method/query" \
+     "http://localhost:3500/v1.0/invoke/producer/method/query" \
      | jq "."

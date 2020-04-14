@@ -2,7 +2,7 @@
 
 Example of Twitter event processing pipeline using dapr framework
 
-![alt text](img/pipeline.svg "Pipeline Overview")
+![alt text](resource/img/pipeline.svg "Pipeline Overview")
 
 ## What does it do
 
@@ -40,33 +40,41 @@ First, you will need to export your Twitter consumer and access keys obtained in
 ```shell
 export TW_CONSUMER_KEY="..."
 export TW_CONSUMER_SECRET="..."
-export TW_ACCESS_TOEKN="..."
+export TW_ACCESS_TOKEN="..."
 export TW_ACCESS_SECRET="..."
 ```
 
-Once set, you are ready to run the provider. `cd` into the `producer` directory and execute `bin/run` command
+Once set, you are ready to run the `provider`:
 
 ```shell
-cd producer
-bin/run
+dapr run bin/producer \
+         --app-id producer \
+         --app-port 8081 \
+         --protocol http \
+         --max-concurrency 1 \
+         --port 3500
 ```
 
 ### Processor
 
-To run the Processor, in a different terminal window, `cd` into the `processor` directory and execute `bin/run` command
+To run the `processor`, in a different terminal window execute:
 
 ```shell
-cd processor
-bin/run
+dapr run bin/processor \
+         --app-id processor \
+         --app-port 8082 \
+         --protocol http
 ```
 
 ### Viewer
 
-To run the Viewer, in a yet different terminal window, simply `cd` into the `viewer` directory and execute `bin/run` command
+Finally, once `provider` and `processor` are running, you are ready to run `viewer`:
 
 ```shell
-cd viewer
-bin/run
+dapr run bin/viewer \
+         --app-id viewer \
+         --app-port 8083 \
+         --protocol http
 ```
 
 ### Query
@@ -74,7 +82,7 @@ bin/run
 Once all three microservices are running, you are ready to submit query. At minimum, query payload is defined by `text` which is search term you want to execute (e.g. `serverless`). This can be a complex query with `AND` or `OR` operators (e.g. `serverless OR dapr BUT NOT faas`). Query also supports other optional parameters like language (`lang`, e.g. `en`) or maximum number of tweets to return (`count`, maximum `100`).
 
 ```json
-{ "query": "serverless OR faas OR lambda OR dapr" }
+{ "query": "serverless OR faas OR dapr", "lang": "en" }
 ```
 
 Once your query file is ready (e.g. `producer/query/demo-query.json`), switch back to the `producer` directory in a yet another terminal window and execute `bin/invoke`command.
@@ -87,9 +95,9 @@ bin/invoke
 Alternatively, you can submit query using the `curl`
 
 ```shell
-curl -d "@query/demo-query.json" \
+curl -d '{ "query": "serverless OR faas OR dapr", "lang": "en" }' \
      -H "Content-type: application/json" \
-     "http://localhost:${DAPR_HTTP_PORT}/v1.0/invoke/provider/method/query"
+     "http://localhost:3500/v1.0/invoke/producer/method/query"
 ```
 
 The result should look something like this
@@ -114,7 +122,7 @@ To view the final results (where each tweet's sentiment is scored), navigate to 
 
 ![](img/ui.png)
 
-The face, left to the tweet author username, is the indication of the sentiment, positive <img src="viewer/static/img/s1.svg" width="25" style="vertical-align:middle"> and negative <img src="viewer/static/img/s0.svg" width="25" style="vertical-align:middle">. The Twitter logo, right of the username, is the link to the specific tweet in the threat on https://twitter.com.
+The face, left to the tweet author username, is the indication of the sentiment, positive <img src="resource/static/img/s1.svg" width="25" style="vertical-align:middle"> and negative <img src="resource/static/img/s0.svg" width="25" style="vertical-align:middle">. The Twitter logo, right of the username, is the link to the specific tweet in the threat on https://twitter.com.
 
 > Note, the model used to score these tweets is basic. It was trained on IMDB movie reviews and it's used here purely for demo purposes.
 

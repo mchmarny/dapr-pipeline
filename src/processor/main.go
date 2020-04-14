@@ -16,7 +16,7 @@ var (
 	logger = log.New(os.Stdout, "PROCESSOR == ", 0)
 
 	// service
-	servicePort    = env.MustGetEnvVar("PORT", "8080")
+	servicePort    = env.MustGetEnvVar("PORT", "8082")
 	serviceVersion = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
 
 	// dapr

@@ -3,12 +3,12 @@
 set -o errexit
 set -o pipefail
 
-export PORT=8083
-
 go mod tidy
 go mod vendor
 
-dapr run --app-id viewer \
-         --app-port $PORT \
-         --protocol http \
-         go run handler.go main.go
+dapr run go run handler.go main.go \
+         --app-id viewer \
+         --app-port 8083 \
+         --protocol http
+
+

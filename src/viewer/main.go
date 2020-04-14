@@ -16,7 +16,7 @@ var (
 	logger = log.New(os.Stdout, "VIEWER == ", 0)
 
 	// service
-	servicePort    = env.MustGetEnvVar("PORT", "8080")
+	servicePort    = env.MustGetEnvVar("PORT", "8083")
 	serviceVersion = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
 
 	sourceTopic = env.MustGetEnvVar("VIEWER_SOURCE_TOPIC_NAME", "processed")
@@ -37,9 +37,9 @@ func main() {
 	broadcaster.Upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	// static
-	r.LoadHTMLGlob("templates/*")
-	r.Static("/static", "./static")
-	r.StaticFile("/favicon.ico", "./static/img/favicon.ico")
+	r.LoadHTMLGlob("resource/template/*")
+	r.Static("/static", "./resource/static")
+	r.StaticFile("/favicon.ico", "./resource/static/img/favicon.ico")
 
 	// simple routes
 	r.GET("/", rootHandler)

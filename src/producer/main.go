@@ -16,13 +16,13 @@ var (
 	logger = log.New(os.Stdout, "PROVIDER == ", 0)
 
 	// service
-	servicePort    = env.MustGetEnvVar("PORT", "8080")
+	servicePort    = env.MustGetEnvVar("PORT", "8081")
 	serviceVersion = env.MustGetEnvVar("RELEASE", "v0.0.1-default")
 
 	// twitter
 	consumerKey    = env.MustGetEnvVar("TW_CONSUMER_KEY", "")
 	consumerSecret = env.MustGetEnvVar("TW_CONSUMER_SECRET", "")
-	accessToken    = env.MustGetEnvVar("TW_ACCESS_TOEKN", "")
+	accessToken    = env.MustGetEnvVar("TW_ACCESS_TOKEN", "")
 	accessSecret   = env.MustGetEnvVar("TW_ACCESS_SECRET", "")
 
 	// dapr

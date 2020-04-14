@@ -61,7 +61,7 @@ github.com/mattn/go-isatty
 # github.com/mchmarny/gcputil v0.3.3
 ## explicit
 github.com/mchmarny/gcputil/env
-# github.com/mchmarny/godapr v0.2.3 => ../../../godapr
+# github.com/mchmarny/godapr v0.2.4 => ../../../godapr
 ## explicit
 github.com/mchmarny/godapr
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd

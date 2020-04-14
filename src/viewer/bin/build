@@ -10,3 +10,6 @@ go build -a -tags netgo \
     -ldflags "-w -extldflags -static" \
     -mod vendor \
     -o ../../bin/viewer
+
+# copy all resources
+yes | cp -rf ./resource ../../resource

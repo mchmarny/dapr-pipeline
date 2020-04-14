@@ -1,11 +1,7 @@
 #!/bin/bash
 
-export PROVIDER_APP_NAME="provider"
-export PORT=8081
-export DAPR_HTTP_PORT=3500
-
 export TW_CONSUMER_KEY="${TW_CONSUMER_KEY:-test-consumer-key}"
 export TW_CONSUMER_SECRET="${TW_CONSUMER_SECRET:-test-consumer-secret}"
 
-export TW_ACCESS_TOEKN="${TW_ACCESS_TOEKN:-test-access-token}"
+export TW_ACCESS_TOKEN="${TW_ACCESS_TOKEN:-test-access-token}"
 export TW_ACCESS_SECRET="${TW_ACCESS_SECRET:-test-access-secret}"

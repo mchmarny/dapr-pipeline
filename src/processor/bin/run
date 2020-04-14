@@ -3,12 +3,12 @@
 set -o errexit
 set -o pipefail
 
-export PORT=8082
-
 go mod tidy
 go mod vendor
 
-dapr run --app-id processor \
-         --app-port $PORT \
-         --protocol http \
-         go run score.go handler.go main.go
+dapr run go run score.go handler.go main.go \
+         --app-id processor \
+         --app-port 8082 \
+         --protocol http
+
+

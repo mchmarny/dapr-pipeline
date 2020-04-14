@@ -5,4 +5,4 @@ set -o pipefail
 
 curl -d "@query/demo-query.json" \
      -H "Content-type: application/json" \
-     "http://localhost:8080/v1/query"
+     "http://localhost:8081/v1/query"

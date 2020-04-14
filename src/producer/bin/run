@@ -9,9 +9,9 @@ DIR="$(dirname "$0")"
 go mod tidy
 go mod vendor
 
-dapr run --app-id $PROVIDER_APP_NAME \
-         --app-port $PORT \
+dapr run go run search.go handler.go main.go \
+         --app-id "producer" \
+         --app-port 8081 \
          --protocol http \
          --max-concurrency 1 \
-         --port $DAPR_HTTP_PORT \
-         go run search.go handler.go main.go
+         --port 3500
