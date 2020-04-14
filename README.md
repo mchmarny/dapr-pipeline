@@ -1,8 +1,10 @@
 # dapr-pipeline
 
-Example of Twitter event processing pipeline using dapr framework
+Example of Twitter event processing pipeline using dapr framework.
 
 ![alt text](resource/img/pipeline.svg "Pipeline Overview")
+
+> I built this pipeline as a means of learning dapr. I suspect in few places I'm not following the best practices. Please, do open an issue if you find something.
 
 ## What does it do
 
@@ -20,22 +22,27 @@ To run this demo locally, you will have to have install [dapr](https://github.co
 
 To query Twitter API you will also need the consumer key and secret. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
 
-## How to demo it
+## Setup
 
-Assuming you have all the prerequisites mentioned above you can demo this dapr pipeline in following steps.
-
-> For ease of replication and brevity of this document I created simple commands located in the `bin` directory in each project. Both, for security reasons and to learn how execute the complete command, you should review these before executing scripts.
-
-This pipeline comprises three microservices: Provider, Processor, and Viewer. Successfully ran, each microservice will return this message:
+Assuming you have all the prerequisites mentioned above you can demo this dapr pipeline in following steps. First, start by cloning this repo:
 
 ```shell
-ℹ️  Updating metadata for app command: go run search.go handler.go main.go
-✅  You're up and running! Both Dapr and your app logs will appear here.
+git clone https://github.com/mchmarny/dapr-pipeline.git
 ```
+
+and then navigate into the `dapr-pipeline` directory:
+
+```shell
+cd dapr-pipeline
+```
+
+## How to
+
+This pipeline consists of three microservices: Provider, Processor, and Viewer. In the `dapr-pipeline` directory follow these instructions on launching each one of these services:
 
 ### Provider
 
-First, you will need to export your Twitter consumer and access keys obtained in [Prerequisites](#prerequisites) section
+Before starting the `provider`, you will need to export your Twitter API consumer and access keys (see the [Prerequisites](#prerequisites) section for details).
 
 ```shell
 export TW_CONSUMER_KEY="..."
@@ -44,7 +51,7 @@ export TW_ACCESS_TOKEN="..."
 export TW_ACCESS_SECRET="..."
 ```
 
-Once set, you are ready to run the `provider`:
+Once the Twitter API consumer and access details are set, you are ready to run the `provider`:
 
 ```shell
 dapr run bin/producer \
@@ -55,9 +62,16 @@ dapr run bin/producer \
          --port 3500
 ```
 
+Assuming everything went OK, you should see something like this:
+
+```shell
+ℹ️  Updating metadata for app command: bin/producer
+✅  You're up and running! Both Dapr and your app logs will appear here.
+```
+
 ### Processor
 
-To run the `processor`, in a different terminal window execute:
+To run the `processor`, in a another terminal window execute but still in the `dapr-pipeline` directory run:
 
 ```shell
 dapr run bin/processor \
@@ -66,9 +80,16 @@ dapr run bin/processor \
          --protocol http
 ```
 
+Again, if everything goes well, you will see:
+
+```shell
+ℹ️  Updating metadata for app command: bin/processor
+✅  You're up and running! Both Dapr and your app logs will appear here.
+```
+
 ### Viewer
 
-Finally, once `provider` and `processor` are running, you are ready to run `viewer`:
+Finally, once `provider` and `processor` are running, you are ready to run `viewer`. In yet another terminal window run:
 
 ```shell
 dapr run bin/viewer \
@@ -77,22 +98,32 @@ dapr run bin/viewer \
          --protocol http
 ```
 
+Just like with the previous two, you will see this on successful start:
+
+```shell
+ℹ️  Updating metadata for app command: bin/viewer
+✅  You're up and running! Both Dapr and your app logs will appear here.
+```
+
+### UI
+
+Once all three microservices are running, you can launch the `viewer` dashboard by navigating in your browser to http://localhost:8083/
+
+![](img/ui.png)
+
+> Note, the model used to score these tweets is basic. It was trained on IMDB movie reviews and it's used here purely for demo purposes.
+
+Once we submit queries, you will see each tweet with its sentiment scored listed here. The icon left of the tweet author's username will indicate the sentiment (positive <img src="resource/static/img/s1.svg" width="25" style="vertical-align:middle"> and negative <img src="resource/static/img/s0.svg" width="25" style="vertical-align:middle">). The Twitter logo, right of the username, can will provide a link to the original tweet on https://twitter.com.
+
 ### Query
 
-Once all three microservices are running, you are ready to submit query. At minimum, query payload is defined by `text` which is search term you want to execute (e.g. `serverless`). This can be a complex query with `AND` or `OR` operators (e.g. `serverless OR dapr BUT NOT faas`). Query also supports other optional parameters like language (`lang`, e.g. `en`) or maximum number of tweets to return (`count`, maximum `100`).
+Finally, to trigger the pipeline you will need to submit query. At minimum, the query payload requires `query` which is search term you want to execute (e.g. `serverless`). This can also be a complex query with `AND` or `OR` operators (e.g. `serverless OR dapr BUT NOT faas`). Also, since the NLP model can only score English text, we are going to provide a language filter (`en`). Here is our demo query, feel free to edit it to your needs.
 
 ```json
 { "query": "serverless OR faas OR dapr", "lang": "en" }
 ```
 
-Once your query file is ready (e.g. `producer/query/demo-query.json`), switch back to the `producer` directory in a yet another terminal window and execute `bin/invoke`command.
-
-```shell
-cd producer
-bin/invoke
-```
-
-Alternatively, you can submit query using the `curl`
+To submit the query we will use `curl` to `POST` this payload to the `producer` query API:
 
 ```shell
 curl -d '{ "query": "serverless OR faas OR dapr", "lang": "en" }' \
@@ -105,26 +136,18 @@ The result should look something like this
 ```json
 {
   "since_id": 0,
-  "max_id": 1250069062870274000,
-  "query": "serverless+OR+faas+OR+lambda+OR+dapr",
-  "query_key": "qk-5f75e45c14cfa5ddb4994b3aaec1a1a3",
+  "max_id": 1250171486037594113,
+  "query": "serverless+OR+faas+OR+dapr",
+  "query_key": "qk-5bc2219226dfe1c2a020891735d571a4",
   "items_found": 100,
-  "items_published": 18,
-  "search_duration": 0.182
+  "items_published": 83,
+  "search_duration": 0.1
 }
 ```
 
 This being the first query, the `since_id` will be `0`. The `max_id` is the last tweet ID which will become the `since_id` on the next query. The `items_published` will be lower than `items_found` because the provider filters out re-tweets (RT).
 
-### UI
-
-To view the final results (where each tweet's sentiment is scored), navigate to http://localhost:8083/ (make sure the viewer service is still running). The UI should look like this
-
-![](img/ui.png)
-
-The face, left to the tweet author username, is the indication of the sentiment, positive <img src="resource/static/img/s1.svg" width="25" style="vertical-align:middle"> and negative <img src="resource/static/img/s0.svg" width="25" style="vertical-align:middle">. The Twitter logo, right of the username, is the link to the specific tweet in the threat on https://twitter.com.
-
-> Note, the model used to score these tweets is basic. It was trained on IMDB movie reviews and it's used here purely for demo purposes.
+Hope you found this demo helpful. You can find my notes I captured during building this demo [here](./NOTES.md).
 
 ## Disclaimer
 
