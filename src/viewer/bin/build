@@ -21,5 +21,5 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -tags netgo -ldflags \
 -mod vendor -o ../../bin/viewer-windows
 
 # copy all resources
-yes | cp -rf ./resource ../../content/resource
+yes | cp -Rf ./resource/static ./resource/template ../../resource/
 
