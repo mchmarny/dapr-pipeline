@@ -52,14 +52,13 @@ spec:
     value: ""
 ```
 
-
 ### Deep service path
 
-This kind of nested methods (e.g. `/api/v1/query`) invocation in CLI works fine:
+Nested methods service path like the common `/api/v1/method` work fine in CLI:
 
 ```shell
 dapr invoke --app-id provider \
-            --method /api/v1/query \
+            --method /api/v1/method \
             --payload '{ "f1": "v1", "f2": "v2" }'
 ```
 
@@ -68,12 +67,14 @@ dapr invoke --app-id provider \
 ```shell
 curl -d "@query/simple-query.json" \
      -H "Content-type: application/json" \
-     "http://localhost:8000/v1.0/invoke/provider/method/%2Fapi%2Fv1%2Fquery"
+     "http://localhost:8000/v1.0/invoke/provider/method/%2Fapi%2Fv1%method"
 ```
+
+Not sure what can be done there though.
 
 ### Topic Subscription
 
-The method of creating subscription code (requiring `GET` route to `/dapr/subscribe`) is little invasive. I could see some need for dynamically creating new subscriptions so that's probably OK. Still, I would like to see an option to not have to create this route in my handler and use the control plane to create the subscription. For example:
+The method of creating subscription code (requiring `GET` route `/dapr/subscribe` in user code) is little invasive. As a developer I'd like to see an additional ability to create subscriptions in the control plane. For example:
 
 ```shell
 dapr subscriptions create --topic processed \
@@ -81,11 +82,13 @@ dapr subscriptions create --topic processed \
                           --method /api/v1.0/events
 ```
 
-I can still subscribe to multiple topics, I do not have to ree-deploy or even re-start the app, and this would keep the developer code entirely idiomatic in situation when the target service wasn't even designed with dapr in mind.
+This way I can still subscribe to multiple topics without re-deploying or even re-starting the app, and, this would keep the developer code free of dapr-specific references and support situations when the target service wasn't even designed with dapr in mind.
+
+Again, this is an additional method so in cases when the current method is required developers can still create a route to expose name of topics to which they want to subscribe.
 
 ### State store bootstrapping
 
-On initial get to store that has not been yet configured there seems to be some error inconsistencies:
+On initial get to a new store, that has not yet been configured, there seems to be some error inconsistencies (`Unauthorized` vs `ERR_STATE_STORE_NOT_FOUND` vs `Payment Required`):
 
 ```shell
 $: curl -v http://localhost:3500/v1.0/state/producer/qid-1dcd8a3205dfbd5725f2e6e5ec59df28
