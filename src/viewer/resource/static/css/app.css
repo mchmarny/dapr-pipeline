@@ -98,6 +98,10 @@ div.item-text {
 	font-style: normal;
 }
 
+#tweets i.small {
+	font-size: 0.7em;
+}
+
 img.sentiment {
 	width: 20px;
 	height: 20px;

@@ -131,7 +131,7 @@ func search(q *Query) (r *SearchResult, err error) {
 		// filter out RT
 		// TODO: parameterize
 		if s.RetweetedStatus != nil {
-			logger.Printf("skipping RT: %s", s.FullText)
+			// logger.Printf("skipping RT: %s", s.FullText)
 			continue
 		}
 

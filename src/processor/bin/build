@@ -19,3 +19,5 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags \
 CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -tags netgo -ldflags \
 '-w -extldflags "-static" -X main.AppVersion=${RELEASE_VERSION}' \
 -mod vendor -o ../../bin/processor-windows
+
+yes | cp -f ./components/processor.yaml ../../components/processor.yaml
