@@ -35,19 +35,6 @@ window.onload = function () {
             connDiv.innerText = "closed";
         };
 
-        /*
-        sample
-        {
-            "content":"some text",
-            "sentiment":1,
-            "published":"2020-04-13T00:21:09Z",
-            "id":124949278000000000,
-            "query":"the term that was used to search",
-            "author":"twitterusername",
-            "author_pic": "https://adasdsa"
-        }
-        */
-
         sock.onmessage = function (e) {
             console.log(e);
             var t = JSON.parse(e.data);
@@ -59,7 +46,8 @@ window.onload = function () {
                 ".svg' alt='sentiment' class='sentiment' />" + t.author +
                 "<a href='https://twitter.com/" + t.author + "/status/" + t.id +
                 "' target='_blank'><img src='static/img/tw.svg' class='tweet-link' /></a></b>" +
-                "<br /><i>" + t.content + "</i></div>";
+                "<br /><i>" + t.content + "</i><br /><i class='small'>Query: " +
+                t.query + "</i></div>";
             item.innerHTML = tmsg
             appendLog(item);
         };

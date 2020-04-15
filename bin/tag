@@ -3,7 +3,7 @@
 set -o errexit
 set -o pipefail
 
-export RELEASE_VERSION="v0.3.2"
+export RELEASE_VERSION="v0.4.1"
 
 git add --all .
 git commit -m "client changes for ${RELEASE_VERSION}"
