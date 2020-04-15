@@ -10,9 +10,17 @@ Example of Twitter event processing pipeline using dapr framework.
 
 This pipeline consists of three services:
 
-* `producer` - exposes query API (`/query`) to which users can post their Twitter queries (e.g. `serverless AND dapr`). These queries are used then to search Twitter API, and after filtering out re-tweets (RT), the matching tweet text along with a small part of meta-data as converted into a generic content payload (e.g. id, author, created on, text) and published to the `tweets` topic (`/v1.0/publish/tweets`). To avoid duplication, the `producer` services persists the last ID from each search result in `dapr` state service (`/v1.0/state/producer`) to use it as the `since_id` in subsequent Twitter API queries.
-* `processor` - subscribes to the `tweets` topic using (`/dapr/subscribe`) service and scores the sentiment of each submitted event using simple probabalistic model (the model was trained on IMDB movie reviews so it's not always most accurate but fine for this demo). All scored content is then published to `processed` topic (`/v1.0/publish/processed`) while the negative content is sent also to an external alerting service configured in `dapr` as an HTTP binding (`/v1.0/bindings/alert`).
-* `viewer` - subscribes to the `processed` topic using (`/dapr/subscribe`) service and stream all received events into a WebSocket connection created by the UI application which displays the content on the dashboard.
+### producer
+
+Exposes query API (`/query`) to which users can post their Twitter queries (e.g. `serverless AND dapr`). These queries are used then to search Twitter API, and after filtering out re-tweets (RT), the matching tweet text along with a small part of meta-data as converted into a generic content payload (e.g. id, author, created on, text) and published to the `tweets` topic (`/v1.0/publish/tweets`). To avoid duplication, the `producer` services persists the last ID from each search result in `dapr` state service (`/v1.0/state/producer`) to use it as the `since_id` in subsequent Twitter API queries.
+
+### processor
+
+Subscribes to the `tweets` topic using (`/dapr/subscribe`) service and scores the sentiment of each submitted event using simple probabalistic model (the model was trained on IMDB movie reviews so it's not always most accurate but fine for this demo). All scored content is then published to `processed` topic (`/v1.0/publish/processed`) while the negative content is sent also to an external alerting service configured in `dapr` as an HTTP binding (`/v1.0/bindings/alert`).
+
+### viewer
+
+Subscribes to the `processed` topic using (`/dapr/subscribe`) service and stream all received events into a WebSocket connection created by the UI application which displays the content on the dashboard.
 
 > This pipeline uses a [godapr](https://github.com/mchmarny/godapr) HTTP client library which hides all the `dapr` specific logic
 
