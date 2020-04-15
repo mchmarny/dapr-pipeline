@@ -1,5 +1,4 @@
-# BUILD
-FROM golang:latest as builder
+FROM golang:1.14.2 as builder
 
 WORKDIR /src/
 COPY . /src/
@@ -7,13 +6,13 @@ COPY . /src/
 ENV GO111MODULE=on
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -a -tags netgo \
-    -ldflags '-w -extldflags "-static"' \
+    -ldflags "-w -extldflags -static" \
     -mod vendor \
-    -o app
+    -o ./service \
+    .
 
-# RUN
 FROM gcr.io/distroless/static:nonroot
-COPY --from=builder /src/app .
-COPY --from=builder /src/templates ./templates/
-COPY --from=builder /src/static ./static/
-ENTRYPOINT ["./app"]
+COPY --from=builder /src/service .
+COPY --from=builder /src/resource ./resource/
+
+ENTRYPOINT ["./service"]

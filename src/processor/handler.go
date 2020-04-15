@@ -67,7 +67,7 @@ func eventHandler(c *gin.Context) {
 		return
 	}
 
-	var t SimpleScoredTweet
+	var t SimpleContent
 	if err := json.Unmarshal(e.Data(), &t); err != nil {
 		logger.Printf("error parsing event content: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -107,8 +107,8 @@ func eventHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-// SimpleScoredTweet represents the the producer tweet plus the score
-type SimpleScoredTweet struct {
+// SimpleContent represents most
+type SimpleContent struct {
 	// ID is the string representation of the tweet ID
 	ID string `json:"id"`
 	// Query is the text of the original query

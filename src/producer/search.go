@@ -153,8 +153,8 @@ func search(q *Query) (r *SearchResult, err error) {
 		}
 		// set if current tweet ID larger than the current max
 		// can't assume tweets arrive in latest last order
-		logger.Printf("new tweet: %t (%d)", s.ID > r.MaxID, s.ID-r.MaxID)
 		if s.ID > r.MaxID {
+			logger.Printf("new tweet, ID diff: %d", s.ID-r.MaxID)
 			r.MaxID = s.ID
 		}
 

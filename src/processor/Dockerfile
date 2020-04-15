@@ -1,4 +1,4 @@
-FROM golang:latest as builder
+FROM golang:1.14.2 as builder
 
 WORKDIR /src/
 COPY . /src/
@@ -12,6 +12,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     .
 
 FROM gcr.io/distroless/static:nonroot
-COPY --from=builder /build/service .
+COPY --from=builder /src/service .
 
 ENTRYPOINT ["./service"]
