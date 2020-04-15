@@ -24,17 +24,20 @@ Subscribes to the `processed` topic using (`/dapr/subscribe`) service and stream
 
 > This pipeline uses a [godapr](https://github.com/mchmarny/godapr) HTTP client library which hides all the `dapr` specific logic
 
-## Prerequisites
 
-### dapr
+## How do I run it
+
+### Prerequisites
+
+#### dapr
 
 To run this demo locally, you will have to have install [dapr](https://github.com) along with all its dependencies (e.g. Docker). The dapr project describes itself as "An event-driven, portable runtime for building microservices". The instructions for how to do that can be found [here](https://github.com/dapr/docs/blob/master/getting-started/environment-setup.md).
 
-### Twitter
+#### Twitter
 
 To query Twitter API you will also need the consumer key and secret. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
 
-## Setup
+### Setup
 
 Assuming you have all the prerequisites mentioned above you can demo this dapr pipeline in following steps. First, start by cloning this repo:
 
@@ -50,11 +53,11 @@ cd dapr-pipeline
 
 > Not, while this demo has been written in `go` you don't need to have go installed to run it. There are pre-built executables for Mac, Windows and Linux. If you are on Mac, just follow this README as is. If you are on another OS, just append the OS name to the executable in each `run` command (e.g. for Linux `bin/producer-linux` and for Windows `bin/producer-windows`).
 
-## How to
+### Starting Pipeline
 
 This pipeline consists of three microservices: Provider, Processor, and Viewer. In the `dapr-pipeline` directory follow these instructions on launching each one of these services:
 
-### Provider
+#### Provider
 
 Before starting the `provider`, you will need to export your Twitter API consumer and access keys (see the [Prerequisites](#prerequisites) section for details).
 
@@ -85,7 +88,7 @@ Assuming everything went OK, you should see something like this:
 ✅  You're up and running! Both Dapr and your app logs will appear here.
 ```
 
-### Processor
+#### Processor
 
 To run the `processor`, in a another terminal window execute but still in the `dapr-pipeline` directory run:
 
@@ -103,7 +106,7 @@ Again, if everything goes well, you will see:
 ✅  You're up and running! Both Dapr and your app logs will appear here.
 ```
 
-### Viewer
+#### Viewer
 
 Finally, once `provider` and `processor` are running, you are ready to run `viewer`. In yet another terminal window run:
 
@@ -121,7 +124,7 @@ Just like with the previous two, you will see this on successful start:
 ✅  You're up and running! Both Dapr and your app logs will appear here.
 ```
 
-### UI
+### UI Dashboard
 
 Once all three microservices are running, you can launch the `viewer` dashboard by navigating in your browser to http://localhost:8083/
 
@@ -131,7 +134,7 @@ Once all three microservices are running, you can launch the `viewer` dashboard 
 
 Once we submit queries, you will see each tweet with its sentiment scored listed here. The icon left of the tweet author's username will indicate the sentiment (positive <img src="resource/static/img/s1.svg" width="25" style="vertical-align:middle"> and negative <img src="resource/static/img/s0.svg" width="25" style="vertical-align:middle">). The Twitter logo, right of the username, can will provide a link to the original tweet on https://twitter.com.
 
-### Query
+### Submitting Query
 
 Finally, to trigger the pipeline you will need to submit query. At minimum, the query payload requires `query` which is search term you want to execute (e.g. `serverless`). This can also be a complex query with `AND` or `OR` operators (e.g. `serverless OR dapr BUT NOT faas`). Also, since the NLP model can only score English text, we are going to provide a language filter (`en`). Here is our demo query, feel free to edit it to your needs.
 
