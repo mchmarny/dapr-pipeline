@@ -1,20 +1,20 @@
 # dapr-pipeline notes
 
-Log for questions, friction, and comments
+Log for questions, friction, and comments I captured while I learned learning dapr and wrote the [dapr-pipeline](https://github.com/mchmarny/dapr-pipeline). These notes cover only local development and are limited to the HTTP API.
 
 ## tl;dr
 
-* Intuitive API with easy to navigate docs
-* Relation of components to core functionality (e.g. state, topic publishing) not always clear (auto-generated on run, not priori)
-* Idiomatic developer experience, with a few exceptions (e.g. topic sub)
+* dapr has an intuitive HTTP API (I haven't tried the gRPC one yet) with easy to navigate documentation
+* Using dapr framework functionality is easy but the relation of components to dapr's core functionality (e.g. state, topic publishing) is not always clear
+* With a few exceptions (e.g. topic sub) dapr HTTP API provides pretty idiomatic developer experience. Language-specific libraries (see [godapr](https://github.com/mchmarny/godapr)) can provide even more natural DX
 
 ## notes
 
-These notes cover only local development and are listed in order in which the came up, as in chronologically, not stack ranked.
+> Note not stack ranked, mostly chronological
 
 ### Invoke with payload vs string
 
-AFAIK there is no way to pass payload reference and `dapr invoke` requires string (e.g. `'{ "f1": "v1", "f2": "v2" }'`). Like to do this:
+AFAIK there is no way to pass payload reference in `dapr invoke`. It seems to requires string (e.g. `'{ "f1": "v1", "f2": "v2" }'`). As a developer, I'd like to this `curl` like option:
 
 ```shell
 dapr invoke --app-id provider \
@@ -24,17 +24,32 @@ dapr invoke --app-id provider \
 
 ### Components
 
-The components are auto-generated on first run in local dev mode which is nice but it's not always clear what the relation is between individual components and the common types of app functionality (e.g. topic publishing and `messagebus` as name).
+The components are auto-generated on first run in local dev mode, which is nice, but it isn't always clear what is the relation between individual components/files and the common types of app functionality (e.g. topic publishing and `messagebus` as name). Also, there is the whole `bus` vs `queue` thing ;)
 
-For example, whenever I run the `viewer` app I get the `pubsub.yaml` and `statestore.yaml` components created even though I don't use them and there seems to be no way to remove them as they will be regenerated on the next run.
+Here is more specific example. The viewer app only subscribes to a topic. Still, whenever I run the `viewer` app I get the `pubsub.yaml` and `statestore.yaml` components generated. Removing them seems to cause dapr to regenerate on the next run.
 
-Like to see `dapr components pubsub my-topic` or something similar which the user would run explicitly to create a configured component.
+As a developere I'd like to see...
+
+```shell
+dapr components pubsub my-topic \
+  --type pubsub.redis
+  --metadata redisHost=localhost:6379
+```
+
+...or something similar that I'd run explicitly to create an already configured component.
 
 ```yaml
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
   name: my-topic
+spec:
+  type: pubsub.redis
+  metadata:
+  - name: redisHost
+    value: localhost:6379
+  - name: redisPassword
+    value: ""
 ```
 
 
