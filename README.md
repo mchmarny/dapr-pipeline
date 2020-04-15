@@ -53,7 +53,7 @@ cd dapr-pipeline
 
 > Not, while this demo has been written in `go` you don't need to have go installed to run it. There are pre-built executables for Mac, Windows and Linux. If you are on Mac, just follow this README as is. If you are on another OS, just append the OS name to the executable in each `run` command (e.g. for Linux `bin/producer-linux` and for Windows `bin/producer-windows`).
 
-### Starting Pipeline
+### Starting pipeline
 
 This pipeline consists of three microservices: Provider, Processor, and Viewer. In the `dapr-pipeline` directory follow these instructions on launching each one of these services:
 
@@ -124,7 +124,7 @@ Just like with the previous two, you will see this on successful start:
 ✅  You're up and running! Both Dapr and your app logs will appear here.
 ```
 
-### UI Dashboard
+### Dashboard
 
 Once all three microservices are running, you can launch the `viewer` dashboard by navigating in your browser to http://localhost:8083/
 
@@ -134,7 +134,7 @@ Once all three microservices are running, you can launch the `viewer` dashboard 
 
 Once we submit queries, you will see each tweet with its sentiment scored listed here. The icon left of the tweet author's username will indicate the sentiment (positive <img src="resource/static/img/s1.svg" width="25" style="vertical-align:middle"> and negative <img src="resource/static/img/s0.svg" width="25" style="vertical-align:middle">). The Twitter logo, right of the username, can will provide a link to the original tweet on https://twitter.com.
 
-### Submitting Query
+## How do I submit a query
 
 Finally, to trigger the pipeline you will need to submit query. At minimum, the query payload requires `query` which is search term you want to execute (e.g. `serverless`). This can also be a complex query with `AND` or `OR` operators (e.g. `serverless OR dapr BUT NOT faas`). Also, since the NLP model can only score English text, we are going to provide a language filter (`en`). Here is our demo query, feel free to edit it to your needs.
 
