@@ -1,8 +1,5 @@
 #!/bin/bash
 
-set -o errexit
-set -o pipefail
-
 export RELEASE_VERSION="v0.4.2"
 
 git add --all .
