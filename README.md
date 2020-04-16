@@ -51,7 +51,13 @@ and then navigate into the `dapr-pipeline` directory:
 cd dapr-pipeline
 ```
 
-> Not, while this demo has been written in `go` you don't need to have go installed to run it. You can download the pre-built executables for Mac, Windows and Linux from the [latest release](https://github.com/mchmarny/dapr-pipeline/releases/latest). If you are on Mac, just follow this README as is. Otherwise, just append the OS name to the executable in each `run` command (e.g. for Linux `bin/producer-linux` and for Windows `bin/producer-windows`).
+and build the executables for your OS
+
+```shell
+bin/build
+```
+
+> Note, if you don't have `go` you can download the pre-built executables for Mac, Windows or Linux from the [latest release](https://github.com/mchmarny/dapr-pipeline/releases/latest). For Mac, just follow this README as is. Otherwise, append the OS name to the executable in each `run` command (e.g. for Linux `bin/producer-linux` and for Windows `bin/producer-windows`).
 
 ### Starting pipeline
 
