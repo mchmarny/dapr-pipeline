@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export RELEASE_VERSION="v0.4.2"
+export RELEASE_VERSION="v0.4.3"
 
 git add --all .
 git commit -m "client changes for ${RELEASE_VERSION}"
