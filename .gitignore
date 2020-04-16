@@ -13,3 +13,8 @@ src/producer/components/statestore.yaml
 src/processor/components/statestore.yaml
 src/viewer/components/pubsub.yaml
 src/viewer/components/statestore.yaml
+
+# locally build binariees
+bin/producer*
+bin/processor*
+bin/viewer*
