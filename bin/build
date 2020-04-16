@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -o errexit
+
+export RELEASE_VERSION="v0.3.1"
+
+function build_release {
+    (
+    PRJ=$1
+    cd "src/${PRJ}"
+    DIR="$(PWD)"
+    echo "building ${PRJ} in ${DIR} dir..."
+
+    go mod tidy
+    go mod vendor
+
+    CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -tags netgo -ldflags \
+    '-w -extldflags "-static" -X main.AppVersion=${RELEASE_VERSION}' \
+    -mod vendor -o "../../bin/${PRJ}"
+
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags \
+    '-w -extldflags "-static" -X main.AppVersion=${RELEASE_VERSION}' \
+    -mod vendor -o "../../bin/${PRJ}-linux"
+
+    CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -tags netgo -ldflags \
+    '-w -extldflags "-static" -X main.AppVersion=${RELEASE_VERSION}' \
+    -mod vendor -o "../../bin/${PRJ}-windows"
+    )
+}
+
+build_release "processor"
+build_release "producer"
+build_release "viewer"
+
+echo "coping components and resources ..."
+yes | cp -f src/processor/components/processor.yaml components/processor.yaml
+yes | cp -f src/producer/components/producer.yaml components/producer.yaml
+yes | cp -Rf src/viewer/resource/static src/viewer/resource/template resource/
+
+echo "DONE"
