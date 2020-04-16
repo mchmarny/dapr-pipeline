@@ -59,7 +59,7 @@ func main() {
 
 	// server
 	hostPort := net.JoinHostPort("0.0.0.0", servicePort)
-	logger.Printf("Server starting: %s \n", hostPort)
+	logger.Printf("Server (%s) starting: %s \n", AppVersion, hostPort)
 	if err := r.Run(hostPort); err != nil {
 		logger.Fatal(err)
 	}

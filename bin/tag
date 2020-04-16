@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export RELEASE_VERSION="v0.4.3"
+DIR="$(dirname "$0")"
+. "${DIR}/config"
 
 git add --all .
 git commit -m "client changes for ${RELEASE_VERSION}"
