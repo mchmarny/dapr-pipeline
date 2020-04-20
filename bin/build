@@ -1,0 +1,59 @@
+#!/bin/bash
+
+set -o errexit
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+function build_release {
+    (
+    PRJ=$1
+    cd "src/${PRJ}"
+    DIR="$(pwd)"
+    echo "building ${PRJ} in ${DIR} dir..."
+
+    go mod tidy
+    go mod vendor
+
+    case "$(uname -s)" in
+
+        Darwin)
+            echo "Platform: Mac, Release Version: ${RELEASE_VERSION}"
+            CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -tags netgo -ldflags \
+            "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
+            -mod vendor -o "../../bin/${PRJ}"
+            ;;
+
+        Linux)
+            echo "Platform: Linux, Release Version: ${RELEASE_VERSION}"
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags \
+            "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
+            -mod vendor -o "../../bin/${PRJ}"
+            ;;
+
+        CYGWIN*|MINGW32*|MSYS*|MINGW*)
+            echo "Platform: Windows, Release Version: ${RELEASE_VERSION}"
+            CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -tags netgo -ldflags \
+            "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
+            -mod vendor -o "../../bin/${PRJ}"
+            ;;
+
+        *)
+            echo "Unsuported OS"
+            exit 1
+            ;;
+    esac
+
+    )
+}
+
+build_release "processor"
+build_release "producer"
+build_release "viewer"
+
+echo "coping components and resources ..."
+yes | cp -f src/processor/components/processor.yaml components/processor.yaml
+yes | cp -f src/producer/components/producer.yaml components/producer.yaml
+yes | cp -Rf src/viewer/resource/static src/viewer/resource/template resource/
+
+echo "DONE"

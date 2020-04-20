@@ -1,0 +1,4 @@
+{
+    "query": "serverless OR faas OR lambda OR dapr",
+    "lang": "en"
+}

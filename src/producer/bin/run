@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+go mod tidy
+go mod vendor
+
+dapr run go run search.go handler.go main.go \
+         --app-id "producer" \
+         --app-port 8081 \
+         --protocol http \
+         --max-concurrency 1 \
+         --port 3500

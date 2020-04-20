@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -o errexit
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+function build_release {
+    (
+    PRJ=$1
+    cd "src/${PRJ}"
+    DIR="$(pwd)"
+    echo "building ${PRJ} in ${DIR} dir..."
+
+    go mod tidy
+    go mod vendor
+
+    echo "Platform: Mac, Release Version: ${RELEASE_VERSION}"
+    CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -tags netgo -ldflags \
+    "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
+    -mod vendor -o "../../bin/${PRJ}-mac"
+
+    echo "Platform: Linux, Release Version: ${RELEASE_VERSION}"
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags \
+    "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
+    -mod vendor -o "../../bin/${PRJ}-linux"
+
+    echo "Platform: Windows, Release Version: ${RELEASE_VERSION}"
+    CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -tags netgo -ldflags \
+    "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
+    -mod vendor -o "../../bin/${PRJ}-windows"
+
+    )
+}
+
+build_release "processor"
+build_release "producer"
+build_release "viewer"
+
+echo "Compressing OS specific releases..."
+zip -r "bin/dapr-pipeline-mac-${RELEASE_VERSION}.zip" \
+    bin/producer-mac bin/processor-mac bin/viewer-mac
+
+zip -r "bin/dapr-pipeline-linux-${RELEASE_VERSION}.zip" \
+    bin/producer-linux bin/processor-linux bin/viewer-linux
+
+zip -r "bin/dapr-pipeline-windows-${RELEASE_VERSION}.zip" \
+    bin/producer-windows bin/processor-windows bin/viewer-windows
+
+echo "DONE"
