@@ -2,7 +2,7 @@
 
 Example of Twitter event processing pipeline using dapr framework.
 
-![alt text](resource/image/pipeline.svg "Pipeline Overview")
+![alt text](resource/image/pipeline1.svg "Pipeline Overview")
 
 > I built this pipeline as a way of learning dapr. Please, do open an issue if you find a bug or where I'm not following the best practices. You can find my notes from this experience [here](./NOTES.md).
 
