@@ -35,20 +35,21 @@ spec:
         - name: TW_CONSUMER_KEY
           valueFrom:
             secretKeyRef:
-              name: twitter
-              key: TW_CONSUMER_KEY
+              name: pipeline-twitter
+              key: consumer-key
         - name: TW_CONSUMER_SECRET
           valueFrom:
             secretKeyRef:
-              name: twitter
-              key: TW_CONSUMER_SECRET
+              name: pipeline-twitter
+              key: consumer-secret
         - name: TW_ACCESS_TOKEN
           valueFrom:
             secretKeyRef:
-              name: twitter
-              key: TW_ACCESS_TOKEN
+              name: pipeline-twitter
+              key: access-token
         - name: TW_ACCESS_SECRET
           valueFrom:
             secretKeyRef:
-              name: twitter
-              key: TW_ACCESS_SECRET
+              name: pipeline-twitter
+              key: access-secret
+

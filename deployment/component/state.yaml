@@ -7,11 +7,12 @@ spec:
   metadata:
   - name: accountName
     secretKeyRef:
-      name: state-store
+      name: pipeline-state
       key: account-name
   - name: accountKey
     secretKeyRef:
-      name: state-store
+      name: pipeline-state
       key: account-key
   - name: tableName
-    value: producer-state
+    value: QueryLastTweetID
+

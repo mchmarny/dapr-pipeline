@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor
+  labels:
+    app: processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: processor
+  template:
+    metadata:
+      labels:
+        app: processor
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/id: "processor"
+        dapr.io/port: "8082"
+    spec:
+      containers:
+      - name: processor
+        image: mchmarny/processor:v0.3.1
+        ports:
+        - containerPort: 8082
+        env:
+        - name: PORT
+          value: "8082"
+        - name: DAPR_HTTP_PORT
+          value: "3500"
+        - name: PRODUCER_RESULT_TOPIC_NAME
+          value: tweets
+        - name: PROCESSOR_RESULT_TOPIC_NAME
+          value: processed
+        - name: PROCESSOR_ALERT_BINDING_NAME
+          value: alert

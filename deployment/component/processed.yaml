@@ -7,5 +7,5 @@ spec:
   metadata:
   - name: connectionString
     secretKeyRef:
-      name: pubsub-provider
+      name: pipeline-bus
       key: connection-string
