@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer
+  labels:
+    app: producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer
+  template:
+    metadata:
+      labels:
+        app: producer
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/id: "producer"
+        dapr.io/port: "8081"
+    spec:
+      containers:
+      - name: node
+        image: mchmarny/producer:v0.3.1
+        ports:
+        - containerPort: 8081
+        env:
+        - name: TW_CONSUMER_KEY
+          secretKeyRef:
+            name: twitter
+            key: TW_CONSUMER_KEY
+        - name: TW_CONSUMER_SECRET
+          secretKeyRef:
+            name: twitter
+            key: TW_CONSUMER_SECRET
+
+

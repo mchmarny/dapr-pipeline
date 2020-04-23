@@ -1,0 +1,17 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: producer-state
+spec:
+  type: state.azure.tablestorage
+  metadata:
+  - name: accountName
+    secretKeyRef:
+      name: state-store
+      key: account-name
+  - name: accountKey
+    secretKeyRef:
+      name: state-store
+      key: account-key
+  - name: tableName
+    value: producer-state

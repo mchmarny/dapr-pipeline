@@ -1,0 +1,12 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: alert
+spec:
+  type: bindings.http
+  metadata:
+  - name: url
+    value: https://api.thingspeak.com/alerts/send
+  - name: method
+    value: POST
+

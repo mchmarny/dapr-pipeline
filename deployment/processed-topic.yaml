@@ -1,0 +1,11 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: processed
+spec:
+  type: pubsub.azure.servicebus
+  metadata:
+  - name: connectionString
+    secretKeyRef:
+      name: pubsub-provider
+      key: connection-string
