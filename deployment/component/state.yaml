@@ -1,0 +1,18 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: producer-state
+spec:
+  type: state.azure.tablestorage
+  metadata:
+  - name: accountName
+    secretKeyRef:
+      name: pipeline-state
+      key: account-name
+  - name: accountKey
+    secretKeyRef:
+      name: pipeline-state
+      key: account-key
+  - name: tableName
+    value: QueryLastTweetID
+

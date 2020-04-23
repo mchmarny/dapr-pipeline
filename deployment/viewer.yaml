@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: viewer
+  labels:
+    app: viewer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: viewer
+  template:
+    metadata:
+      labels:
+        app: viewer
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/id: "viewer"
+        dapr.io/port: "8083"
+    spec:
+      containers:
+      - name: viewer
+        image: mchmarny/viewer:v0.3.1
+        ports:
+        - containerPort: 8083
+        env:
+        - name: PORT
+          value: "8083"
+        - name: DAPR_HTTP_PORT
+          value: "3500"
+        - name: VIEWER_SOURCE_TOPIC_NAME
+          value: processed

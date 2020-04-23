@@ -20,7 +20,7 @@ var (
 	// DefaultHTTPTimeout is the default HTTP client timeout
 	DefaultHTTPTimeout = time.Second * 30
 	// DefaultConsistency is the state store consistency option setting
-	DefaultConsistency = "strong" // override defaults (eventual)
+	DefaultConsistency = "eventual" // override defaults (eventual)
 	// DefaultConcurrency is the state store concurrency option setting
 	DefaultConcurrency = "last-write" // override defaults (first-write)
 	// DefaultRetryPolicyInterval is the state store retry policy interval setting

@@ -8,8 +8,5 @@ go mod vendor
 
 RELEASE_VERSION="v0.3.1"
 
-go mod tidy
-go mod vendor
-
 docker build -t "mchmarny/processor:${RELEASE_VERSION}" .
-
+docker push "mchmarny/processor:${RELEASE_VERSION}"

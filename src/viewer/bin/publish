@@ -8,8 +8,6 @@ go mod vendor
 
 RELEASE_VERSION="v0.3.1"
 
-go mod tidy
-go mod vendor
-
 docker build -t "mchmarny/viewer:${RELEASE_VERSION}" .
+docker push "mchmarny/viewer:${RELEASE_VERSION}"
 
