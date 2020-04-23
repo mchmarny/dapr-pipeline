@@ -25,29 +25,33 @@ spec:
         - containerPort: 8081
         env:
         - name: PORT
-          vallue: 8081
+          value: "8081"
         - name: DAPR_HTTP_PORT
-          vallue: 3500
+          value: "3500"
         - name: PRODUCER_STATE_STORE_NAME
-          vallue: producer-state
+          value: producer-state
         - name: PRODUCER_RESULT_TOPIC_NAME
-          vallue: tweets
+          value: tweets
         - name: TW_CONSUMER_KEY
-          secretKeyRef:
-            name: twitter
-            key: TW_CONSUMER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: twitter
+              key: TW_CONSUMER_KEY
         - name: TW_CONSUMER_SECRET
-          secretKeyRef:
-            name: twitter
-            key: TW_CONSUMER_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: twitter
+              key: TW_CONSUMER_SECRET
         - name: TW_ACCESS_TOKEN
-          secretKeyRef:
-            name: twitter
-            key: TW_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: twitter
+              key: TW_ACCESS_TOKEN
         - name: TW_ACCESS_SECRET
-          secretKeyRef:
-            name: twitter
-            key: TW_ACCESS_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: twitter
+              key: TW_ACCESS_SECRET
         
         
             
