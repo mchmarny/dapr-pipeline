@@ -19,7 +19,7 @@ spec:
         dapr.io/port: "8081"
     spec:
       containers:
-      - name: node
+      - name: producer
         image: mchmarny/producer:v0.3.1
         ports:
         - containerPort: 8081
@@ -52,8 +52,3 @@ spec:
             secretKeyRef:
               name: twitter
               key: TW_ACCESS_SECRET
-        
-        
-            
-
-
