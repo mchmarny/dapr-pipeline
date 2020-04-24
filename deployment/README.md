@@ -63,6 +63,13 @@ kubectl apply -f deployment/
 
 > TODO: add expected return from command and way to validate 
 
+### Exposign viewer UI
+
+Now just create a new service to expose the viewer app to external traffic. There are multiple ways to do that in Kubernetes but the simplest way is the expose command with NodePort as parameter. I'll create a proper laod balancer later. 
+
+```shell
+kubectl expose deployment/viewer --type="NodePort" --port 8083
+```
 
 ## TODO
 
