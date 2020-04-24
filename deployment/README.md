@@ -71,6 +71,12 @@ Now just create a new service to expose the viewer app to external traffic. Ther
 kubectl expose deployment/viewer --type="NodePort" --port 8083
 ```
 
+And then export the dynamically asigned port to the viewer application 
+
+```shell
+export VIEWER_PORT=$(kubectl get services/viewer -o go-template='{{(index .spec.ports 0).nodePort}}')
+```
+
 ## TODO
 
 * Create a service to expose the viewer UI
