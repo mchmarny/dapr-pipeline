@@ -77,6 +77,9 @@ And then export the dynamically asigned port to the viewer application
 export VIEWER_PORT=$(kubectl get services/viewer -o go-template='{{(index .spec.ports 0).nodePort}}')
 ```
 
+Now you can access the viewer app for this demo using `open http://${CLUSTER_IP}:${VIEWER_PORT}/`
+
+
 ## TODO
 
 * Create a service to expose the viewer UI
