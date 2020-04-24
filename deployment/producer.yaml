@@ -4,11 +4,13 @@ metadata:
   name: producer
   labels:
     app: producer
+    group: pipeline
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: producer
+      group: pipeline
   template:
     metadata:
       labels:

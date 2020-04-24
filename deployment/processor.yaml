@@ -4,11 +4,13 @@ metadata:
   name: processor
   labels:
     app: processor
+    group: pipeline
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: processor
+      group: pipeline
   template:
     metadata:
       labels:

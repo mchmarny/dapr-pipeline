@@ -37,7 +37,7 @@ To run this demo locally, you will have to have install [dapr](https://github.co
 
 To query Twitter API you will also need the consumer key and secret. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
 
-### Setup
+### Setup Locally 
 
 Assuming you have all the prerequisites mentioned above you can demo this dapr pipeline in following steps. First, start by cloning this repo:
 
@@ -173,6 +173,69 @@ The result should look something like this
 This being the first query, the `since_id` will be `0`. The `max_id` is the last tweet ID which will become the `since_id` on the next query. The `items_published` will be lower than `items_found` because the provider filters out re-tweets (RT).
 
 Hope you found this demo helpful. You can find my notes I captured during building this demo [here](./NOTES.md).
+
+## Kubernetes Deployment
+
+This section will overview deployment into Kubernates. Assuming you have `kubectl` installed and configure to connect to your cluster you will need to setup the necessary secrets:
+
+### Setup Kubernates secrets
+
+#### Setup Azure Table Storage
+
+To set up Azure Table Storage itself follow the instructions [here](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal)
+
+```shell
+kubectl create secret generic pipeline-state \
+  --from-literal=account-name='' \
+  --from-literal=account-key=''
+```
+
+> TODO: add expected return from command and way to validate 
+
+#### Setup Azure Service Bus
+
+To set up Azure Service Bus itself follow the instructions [here](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal)
+
+
+```shell
+kubectl create secret generic pipeline-bus \
+  --from-literal=connection-string=''
+```
+
+> TODO: add expected return from command and way to validate 
+
+#### Setup Twitter API 
+
+To query Twitter API you will also need the consumer key and secret. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
+
+
+```shell
+kubectl create secret generic pipeline-twitter \
+  --from-literal=access-secret: '' \
+  --from-literal=access-token: '' \
+  --from-literal=consumer-key: '' \
+  --from-literal=consumer-secret: ''
+```
+
+> TODO: add expected return from command and way to validate 
+
+
+### Deploy component dependnacies 
+
+```shell
+kubectl apply -f deployment/components
+```
+
+> TODO: add expected return from command and way to validate 
+
+### Deploy the pipeline 
+
+```shell
+kubectl apply -f deployment/
+```
+
+> TODO: add expected return from command and way to validate 
+
 
 ## Disclaimer
 

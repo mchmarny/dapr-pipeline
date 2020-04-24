@@ -2,6 +2,9 @@ apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
   name: processed
+  labels:
+    app: tweets
+    group: pipeline
 spec:
   type: pubsub.azure.servicebus
   metadata:

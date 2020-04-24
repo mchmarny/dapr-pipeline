@@ -4,11 +4,13 @@ metadata:
   name: viewer
   labels:
     app: viewer
+    group: pipeline
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: viewer
+      group: pipeline
   template:
     metadata:
       labels:
