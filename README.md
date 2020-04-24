@@ -27,6 +27,8 @@ Subscribes to the `processed` topic using (`/dapr/subscribe`) service and stream
 
 ## How do I run it
 
+> I'm covering here the local deployment. The Kubernetes deployment instructions are located [here](./deployment/)
+
 ### Prerequisites
 
 #### dapr
