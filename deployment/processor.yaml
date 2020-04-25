@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: processor
-        image: mchmarny/processor:v0.3.1
+        image: mchmarny/processor:v0.5.1
         ports:
         - containerPort: 8082
         env:
