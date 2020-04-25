@@ -1,14 +1,45 @@
 # Kubernetes Deployment
 
-Assuming you have `kubectl` installed and configure to connect to your cluster you will need to setup the necessary secrets:
+This document will overview the `dapr-pipeline` demo deployment into Kubernetes. For illustration purposes, all commands in this document will based on Microsoft Azure. dapr supports wide array of state and pubsub backing services across multiple Cloud and on-prem deployments. So if you have a Kubernates cluster soemwhere else, you can substitute:
 
-> Note, dapr supports wide array of state and pubsub backing services across multiple Cloud and on-prem deployments. This document will use [Azure Table Storage](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) for state, and [Azure Service Bus](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal) for pubsub but you can easily substitute these using any of the components listed [here](https://github.com/dapr/docs/tree/master/howto).
+* [Azure Table Storage](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) as state backing service with anyone of [these](https://github.com/dapr/docs/tree/master/howto/setup-state-store)
+* [Azure Service Bus](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal) as pubsub backing service with anyone of [these](https://github.com/dapr/docs/tree/master/howto/setup-pub-sub-message-broker) 
+
+## Prerequisite
+
+* [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+
+## Configuration
+
+Also, to simplify all the scripts in this doc, set a few `az` defaults:
+
+```shell
+az account set --subscription <name or id>
+az configure --defaults location=<location> group=<your resource group>
+```
+
+## Cluster Setup (optional)
+
+If you don't already have one, you can create Kubernates cluster on Azure with all the necessary add-ons usign tihs command:
+
+```shell
+az aks create --name daprdemo \
+              --kubernetes-version 1.15.10 \
+              --enable-managed-identity \
+              --vm-set-type VirtualMachineScaleSets \
+              --node-vm-size Standard_F4s_v2 \
+              --enable-addons monitoring,http_application_routing        \
+              --generate-ssh-keys
+```
 
 ## Component-backing services 
 
-### Azure Table Storage
+Assuming you have a Kubernates cluster and `kubectl` CLI configure to connect you will need to setup the `dapr` components and their backing services:
 
-To set up Azure Table Storage itself follow the instructions [here](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal)
+
+### State
+
+To configure `dapr` state component we will use Azure Table Storage. To set it up you can follow [these instructions](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal). Once finished, you will need to cofigure the Kubernates secrets to hold the Azure Table Storage account information:
 
 ```shell
 kubectl create secret generic pipeline-state \
@@ -16,11 +47,15 @@ kubectl create secret generic pipeline-state \
   --from-literal=account-key=''
 ```
 
-> TODO: add expected return from command and way to validate 
+To deploy the `dapr` state component configured for the above set up service
 
-### Azure Service Bus
+```shell
+kubectl apply -f component/state.yaml
+```
 
-To set up Azure Service Bus itself follow the instructions [here](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal)
+### PubSub
+
+To configure `dapr` pubsub component we will use Azure Service Bus. To set it up you can follow [these instructions](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal). Once finished, you will need to configure the Kubernates secrets for Azure Service Bus connection string information. 
 
 
 ```shell
@@ -28,21 +63,23 @@ kubectl create secret generic pipeline-bus \
   --from-literal=connection-string=''
 ```
 
-> TODO: add expected return from command and way to validate 
-
-
-### Deploy components
+To deploy the `dapr` pubsub topic components for the above set up service
 
 ```shell
-kubectl apply -f deployment/components
+kubectl apply -f component/processed.yaml -f component/tweet.yaml
 ```
 
-> TODO: add expected return from command and way to validate 
+### Binding 
 
+To configure `dapr` binding component we will use a simple service offered by thingspeak.com that does not require any additional configuration. 
+
+```shell
+kubectl apply -f component/alert.yaml
+```
 
 ## Deploy pipeline 
 
-Before deploying the actual pipeline you will have to create a secret to enable the `producer` to query Twitter API. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
+Before deploying the actual pipeline you will have to create one more secret, the Twitter API secrets for `producer`. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
 
 
 ```shell
@@ -53,25 +90,21 @@ kubectl create secret generic pipeline-twitter \
   --from-literal=consumer-secret: ''
 ```
 
-> TODO: add expected return from command and way to validate 
-
-One the `pipeline-twitter` twitter is created, you are ready to deploy the entire pipeline (`producer`, `processor`, `viewer`
+Once the `pipeline-twitter` secret is created, you are ready to deploy the entire pipeline (`producer`, `processor`, `viewer`
 
 ```shell
-kubectl apply -f deployment/
+kubectl apply -f producer.yaml -f processor.yaml -f viewer.yaml
 ```
-
-> TODO: add expected return from command and way to validate 
 
 ### Exposign viewer UI
 
-To expose the viewer application extertnally, create a `service` and an `ingress` by applying the [route.yaml](./viewer-route.yaml)
+To expose the viewer application extertnally, create you will need to create Kubernetes `service` and `ingress` by applying the [route.yaml](./viewer-route.yaml)
 
 ```shell
 kubectl apply -f viewer-route.yaml
 ```
 
-> Note, you will have to change the ingress host rule to DNS you can actually control. I manage `things.io` so in this case I created an `A` record to point to the ingress IP. 
+> Note, you will have to change the ingress host rule to DNS you can actually control. I own `things.io` so in this case I created an `A` record to point to the ingress IP. 
 
 ```yaml
 rules:
