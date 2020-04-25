@@ -65,7 +65,7 @@ kubectl apply -f deployment/
 
 ### Exposign viewer UI
 
-To expose the viewer application extertnally, create a `service` and an `ingress` by applying the [route.yaml](./route.yaml)
+To expose the viewer application extertnally, create a `service` and an `ingress` by applying the [route.yaml](./viewer-route.yaml)
 
 ```shell
 kubectl apply -f viewer-route.yaml
