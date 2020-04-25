@@ -15,8 +15,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/stretchr/testify v1.5.1
 	go.opencensus.io v0.22.3 // indirect
-	go.uber.org/zap v1.14.1 // indirect
-	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
+	go.uber.org/zap v1.15.0 // indirect
+	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
 )
-
-replace github.com/mchmarny/godapr => ../../../godapr

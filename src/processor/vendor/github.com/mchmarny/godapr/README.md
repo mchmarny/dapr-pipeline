@@ -42,7 +42,7 @@ Or define your own state options
 
 ```go
 opt := &StateOptions{
-    Consistency: "eventual",
+    Concurrency: "eventual",
     Concurrency: "first-write",
 }
 
@@ -73,7 +73,7 @@ data := &StateData{
     Key: "id-123",
     Value: person,
     Options: &StateOptions{
-        Consistency: "eventual",
+        Concurrency: "eventual",
         Concurrency: "first-write",
     },
 }
