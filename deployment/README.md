@@ -84,3 +84,22 @@ You can find the IP address assigned to the viewer ingress on your cluster using
 
 Now you should be able to access the demo UI using the DNS defined in your `ingress` (e.g. dapr.thingz.io)
 
+## Invoking query
+
+To submit query similar to the way described in the local developemnt demo, you will have to forward the local port to the `producer-dapr` service.
+
+```shell
+kubectl port-forward service/producer-dapr 8080:80
+```
+
+> Exposign the producer service externally like we did with the viewer is not recomanded as that would enable anyone in the world to submit queries and use your Twitter API credits
+
+Once forwarded, you can execute queries like this: 
+
+```shell
+curl -d '{ "query": "serverless OR faas OR dapr", "lang": "en" }' \
+     -H "Content-type: application/json" \
+     "http://localhost:8080/v1.0/invoke/producer/method/query"
+```
+
+If everything went OK, you should see the tweets with sentiment score appear on the UI. 
