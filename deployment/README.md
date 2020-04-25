@@ -65,24 +65,22 @@ kubectl apply -f deployment/
 
 ### Exposign viewer UI
 
-Now just create a new service to expose the viewer app to external traffic. There are multiple ways to do that in Kubernetes but the simplest way is the expose command with NodePort as parameter. I'll create a proper laod balancer later. 
+To expose the viewer application extertnally, create a `service` and an `ingress` by applying the `route.yaml`
 
 ```shell
-kubectl expose deployment/viewer --type="NodePort" --port 8083
+kubectl apply -f viewer-route.yaml
 ```
 
-And then export the dynamically asigned port to the viewer application 
+> Note, you will have to change the ingress host rule to DNS you can actually control. I manage `things.io` so in this case I created an `A` record to point to the ingress IP. 
 
-```shell
-export VIEWER_PORT=$(kubectl get services/viewer -o go-template='{{(index .spec.ports 0).nodePort}}')
-```
+```yaml
+rules:
+  - host: dapr.thingz.io
+ ```
 
-Now you can access the viewer app for this demo using `open http://${CLUSTER_IP}:${VIEWER_PORT}/`
+You can find the IP address assigned to the viewer ingress on your cluster using:
 
+`kubectl get ingress viewer`
 
-## TODO
-
-* Create a service to expose the viewer UI
-* Document the expected results of the above commands 
-
+Now you should be able to access the demo UI using the DNS defined in your `ingress` (e.g. dapr.thingz.io)
 
