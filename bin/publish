@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -o errexit
+
+DIR="$(dirname "$0")"
+. "${DIR}/config"
+
+RELEASE_VERSION=v0.3.2
+
+function publish_release {
+    (
+    PRJ=$1
+    cd "src/${PRJ}"
+    DIR="$(pwd)"
+    echo "building ${PRJ} image in ${DIR} dir..."
+
+    go mod tidy
+    go mod vendor
+
+    docker build \
+      --build-arg APP_VERSION=$RELEASE_VERSION \
+      -t "mchmarny/${PRJ}:${RELEASE_VERSION}" \
+      .
+
+    echo "publishing mchmarny/${PRJ}:${RELEASE_VERSION}"
+    docker push "mchmarny/${PRJ}:${RELEASE_VERSION}"
+
+    )
+}
+
+publish_release "processor"
+publish_release "producer"
+publish_release "viewer"
+
+echo "DONE"
