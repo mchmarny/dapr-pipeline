@@ -17,6 +17,11 @@ spec:
         dapr.io/enabled: "true"
         dapr.io/id: "processor"
         dapr.io/port: "8082"
+        dapr.io/log-as-json: "true"
+        dapr.io/config: "tracing"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/"
     spec:
       containers:
       - name: processor
