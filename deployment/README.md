@@ -30,9 +30,15 @@ az aks create --name daprdemo \
               --generate-ssh-keys
 ```
 
+## Install dapr
+
+See instructions how to install dapr into your Kubernetes cluster [here](https://github.com/dapr/docs/blob/master/getting-started/environment-setup.md#installing-dapr-on-a-kubernetes-cluster)
+
 ## Component-backing services 
 
 Assuming you have a Kubernates cluster and `kubectl` CLI configure to connect you are ready to setup the `dapr` components and their backing services:
+
+> This demo installs into the `default` namespace in your cluster. When installing into a different namespace, make sure to append the `-n <your namespace name>` to all commands below (secret, component, and deployment) 
 
 ### State
 
