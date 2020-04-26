@@ -1,14 +1,48 @@
 # Kubernetes Deployment
 
-Assuming you have `kubectl` installed and configure to connect to your cluster you will need to setup the necessary secrets:
+This document will overview the `dapr-pipeline` demo deployment into Kubernetes. For illustration purposes, all commands in this document will be based on Microsoft Azure. dapr supports a wide array of state and pubsub backing services across multiple Cloud and on-prem deployments, so if you already have a Kubernates cluster soemwhere else, you can substitute:
 
-> Note, dapr supports wide array of state and pubsub backing services across multiple Cloud and on-prem deployments. This document will use [Azure Table Storage](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) for state, and [Azure Service Bus](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal) for pubsub but you can easily substitute these using any of the components listed [here](https://github.com/dapr/docs/tree/master/howto).
+* [state backing service options](https://github.com/dapr/docs/tree/master/howto/setup-state-store)
+* [pubsub backing service options](https://github.com/dapr/docs/tree/master/howto/setup-pub-sub-message-broker) 
+
+## Prerequisite
+
+* [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+
+Also, to simplify all the scripts in this doc, set a few `az` CLI defaults:
+
+```shell
+az account set --subscription <id or name>
+az configure --defaults location=<prefered location> group=<your resource group>
+```
+
+## Cluster (optional)
+
+If you don't already have Kubernates cluster, you can create it on Azure with all the necessary add-ons for this demo usign tihs command:
+
+```shell
+az aks create --name daprdemo \
+              --kubernetes-version 1.15.10 \
+              --enable-managed-identity \
+              --vm-set-type VirtualMachineScaleSets \
+              --node-vm-size Standard_F4s_v2 \
+              --enable-addons monitoring,http_application_routing \
+              --generate-ssh-keys
+```
+
+## Install dapr
+
+See instructions how to install dapr into your Kubernetes cluster [here](https://github.com/dapr/docs/blob/master/getting-started/environment-setup.md#installing-dapr-on-a-kubernetes-cluster)
 
 ## Component-backing services 
 
-### Azure Table Storage
+Assuming you have a Kubernates cluster and `kubectl` CLI configure to connect you are ready to setup the `dapr` components and their backing services:
 
-To set up Azure Table Storage itself follow the instructions [here](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal)
+> This demo installs into the `default` namespace in your cluster. When installing into a different namespace, make sure to append the `-n <your namespace name>` to all commands below (secret, component, and deployment) 
+
+### State
+
+To configure `dapr` state component in this demo I will use Azure Table Storage. To set it up, follow [these instructions](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal). Once finished, you will need to cofigure also the Kubernates secrets to hold the Azure Table Storage account information:
 
 ```shell
 kubectl create secret generic pipeline-state \
@@ -16,11 +50,15 @@ kubectl create secret generic pipeline-state \
   --from-literal=account-key=''
 ```
 
-> TODO: add expected return from command and way to validate 
+Once the secret is configured, deploy the `dapr` state component:
 
-### Azure Service Bus
+```shell
+kubectl apply -f component/state.yaml
+```
 
-To set up Azure Service Bus itself follow the instructions [here](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal)
+### PubSub
+
+To configure `dapr` pubsub component in this demo I will use Azure Service Bus. To set it up, follow [these instructions](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-topics-subscriptions-portal). Once finished, you will need to configure the Kubernates secret to hold Azure Service Bus connection string information. 
 
 
 ```shell
@@ -28,22 +66,24 @@ kubectl create secret generic pipeline-bus \
   --from-literal=connection-string=''
 ```
 
-> TODO: add expected return from command and way to validate 
-
-
-### Deploy components
+Once the secret is configured, deploy the `dapr` pubsub topic components:
 
 ```shell
-kubectl apply -f deployment/components
+kubectl apply -f component/processed.yaml \
+              -f component/tweet.yaml
 ```
 
-> TODO: add expected return from command and way to validate 
+### Binding 
 
+To configure `dapr` binding component in this demo I will use a simple service offered by thingspeak.com that does not require any additional configuration. 
+
+```shell
+kubectl apply -f component/alert.yaml
+```
 
 ## Deploy pipeline 
 
-Before deploying the actual pipeline you will have to create a secret to enable the `producer` to query Twitter API. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
-
+Before deploying the actual pipeline you will have to create one more secret, the Twitter API credentials for `producer`. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
 
 ```shell
 kubectl create secret generic pipeline-twitter \
@@ -53,36 +93,51 @@ kubectl create secret generic pipeline-twitter \
   --from-literal=consumer-secret: ''
 ```
 
-> TODO: add expected return from command and way to validate 
-
-One the `pipeline-twitter` twitter is created, you are ready to deploy the entire pipeline (`producer`, `processor`, `viewer`
+Once the `pipeline-twitter` secret is created, you are ready to deploy the entire pipeline (`producer`, `processor`, `viewer`
 
 ```shell
-kubectl apply -f deployment/
+kubectl apply -f producer.yaml \
+              -f processor.yaml \
+              -f viewer.yaml
 ```
-
-> TODO: add expected return from command and way to validate 
 
 ### Exposign viewer UI
 
-Now just create a new service to expose the viewer app to external traffic. There are multiple ways to do that in Kubernetes but the simplest way is the expose command with NodePort as parameter. I'll create a proper laod balancer later. 
+To expose the viewer application extertnally, create Kubernetes `service` and `ingress` using [route.yaml](./viewer-route.yaml)
 
 ```shell
-kubectl expose deployment/viewer --type="NodePort" --port 8083
+kubectl apply -f viewer-route.yaml
 ```
 
-And then export the dynamically asigned port to the viewer application 
+> You will have to change the ingress host rule to DNS you can actually control. I own `things.io` so in this case I created an `A` record to point to the ingress IP. 
+
+```yaml
+rules:
+  - host: dapr.thingz.io
+ ```
+
+You can find the IP address assigned to the viewer ingress on your cluster using:
+
+`kubectl get ingress viewer`
+
+At this point you should be able to access the demo UI using the DNS defined in your `ingress` (e.g. dapr.thingz.io)
+
+## Invoking query
+
+To submit query similar to the way described in the local developemnt demo, you will have to forward the local port to the `producer-dapr` service.
 
 ```shell
-export VIEWER_PORT=$(kubectl get services/viewer -o go-template='{{(index .spec.ports 0).nodePort}}')
+kubectl port-forward service/producer-dapr 8080:80
 ```
 
-Now you can access the viewer app for this demo using `open http://${CLUSTER_IP}:${VIEWER_PORT}/`
+> I'm using simple port forwarding to allow only me to submit queries. Exposign the producer service externally like we did with the viewer would enable anyone in the world to submit queries.
 
+Once forwarded, you can execute queries like this: 
 
-## TODO
+```shell
+curl -d '{ "query": "serverless OR faas OR dapr", "lang": "en" }' \
+     -H "Content-type: application/json" \
+     "http://localhost:8080/v1.0/invoke/producer/method/query"
+```
 
-* Create a service to expose the viewer UI
-* Document the expected results of the above commands 
-
-
+If everything went OK, you should see the tweets with sentiment score appear on the UI. 
