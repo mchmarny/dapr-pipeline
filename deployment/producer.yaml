@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: producer
-        image: mchmarny/producer:v0.5.1
+        image: mchmarny/producer:v0.5.2
         ports:
         - containerPort: 8081
         env:

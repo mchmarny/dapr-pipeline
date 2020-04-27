@@ -22,8 +22,7 @@ var (
 	servicePort = env.MustGetEnvVar("PORT", "8082")
 
 	// dapr
-	daprServer = fmt.Sprintf("http://localhost:%s", env.MustGetEnvVar("DAPR_HTTP_PORT", "3500"))
-	daprClient = dapr.NewClient(daprServer)
+	daprClient = dapr.NewClient()
 
 	sourceTopic    = env.MustGetEnvVar("PROCESSOR_SOURCE_TOPIC_NAME", "tweets")
 	processedTopic = env.MustGetEnvVar("PROCESSOR_RESULT_TOPIC_NAME", "processed")

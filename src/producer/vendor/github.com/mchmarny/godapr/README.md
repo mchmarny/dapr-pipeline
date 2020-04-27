@@ -20,10 +20,16 @@ To use `godapr` library in your code, first import it
 import dapr "github.com/mchmarny/godapr"
 ```
 
-Then create a `godapr` client with the `dapr` server URL
+Then create a `godapr` client with the `dapr` server defaults
 
 ```go
-client := dapr.NewClient("http://localhost:3500")
+client := dapr.NewClient()
+```
+
+or if you need to specify non-default dapr port
+
+```go
+client := dapr.NewClientWithURL("http://localhost:3500")
 ```
 
 > consider getting the dapr server URL from environment variable
@@ -42,7 +48,7 @@ Or define your own state options
 
 ```go
 opt := &StateOptions{
-    Concurrency: "eventual",
+    Consistency: "eventual",
     Concurrency: "first-write",
 }
 
@@ -73,7 +79,7 @@ data := &StateData{
     Key: "id-123",
     Value: person,
     Options: &StateOptions{
-        Concurrency: "eventual",
+        Consistency: "eventual",
         Concurrency: "first-write",
     },
 }

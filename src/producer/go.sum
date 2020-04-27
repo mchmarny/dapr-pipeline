@@ -94,8 +94,8 @@ github.com/mattn/go-isatty v0.0.12 h1:wuysRhFDzyxgEmMf5xjvJ2M9dZoWAXNNr5LSBS7uHX
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/mchmarny/gcputil v0.3.3 h1:7xy8l8UEotam8uJPQe2uxAHhklJU0SttQ6VMRY0eQ/g=
 github.com/mchmarny/gcputil v0.3.3/go.mod h1:h8quvmF3tFoEILEmgkMPtZoXW+P16Wn5GV1aKHkUhnQ=
-github.com/mchmarny/godapr v0.2.8 h1:wZcjjwfzL+sjcZjeUX7nSqKSJfJkGVSwv5GVbnIzE0M=
-github.com/mchmarny/godapr v0.2.8/go.mod h1:jmzV6VM/XvwA+PJUdCKpe86vxJC+2iMisjrQhwRTNZM=
+github.com/mchmarny/godapr v0.2.9 h1:VdOaVpF93gFrs+rQDICy8TdoyfuF1jkFHDzK2OyVF5c=
+github.com/mchmarny/godapr v0.2.9/go.mod h1:jmzV6VM/XvwA+PJUdCKpe86vxJC+2iMisjrQhwRTNZM=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 h1:ZqeYNhU3OHLH3mGKHDcjJRFFRrJa6eAM5H+CtDdOsPc=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=
