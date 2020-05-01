@@ -16,6 +16,8 @@ const (
 
 	//SupportedCloudEventContentTye indicates the content type supported by this handlers
 	SupportedCloudEventContentTye = "application/json"
+
+	sentimentAlertThreshold = float64(0.3)
 )
 
 func defaultHandler(c *gin.Context) {
@@ -80,7 +82,16 @@ func eventHandler(c *gin.Context) {
 	// logger.Printf("tweet: %v", t)
 
 	// score the content sentiment
-	t.ContentSentiment = score(t.Content)
+	sentiment, err := score(t.Content)
+	if err != nil {
+		logger.Printf("error scoring sentiment: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Server Error",
+			"message": "Error scoring sentiment, see processor log for details",
+		})
+		return
+	}
+	t.Sentiment = sentiment
 
 	// publish all
 	if err := daprClient.Publish(processedTopic, t); err != nil {
@@ -93,7 +104,8 @@ func eventHandler(c *gin.Context) {
 	}
 
 	// if negative then send alert
-	if t.ContentSentiment == negativeSentimentScore {
+	if t.Sentiment <= sentimentAlertThreshold {
+		logger.Printf("alert threshold %f reached: %f, sending alert", sentimentAlertThreshold, t.Sentiment)
 		if err := daprClient.Send(alertBinding, t); err != nil {
 			logger.Printf("error on sendign alert to binding %v: %v", alertBinding, err)
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -119,8 +131,9 @@ type SimpleContent struct {
 	AuthorPic string `json:"author_pic"`
 	// Content is the full text body of the tweet
 	Content string `json:"content"`
-	// ContentSentiment indicates whether the content is positive (true) or negative (false)
-	ContentSentiment int `json:"sentiment"`
+	// Sentiment is the 0 to 1 score of the sentiment
+	// (0-0.3 bad, 0.3-0.6 neutral, 0.6-1 positive)
+	Sentiment float64 `json:"sentiment"`
 	// Published is the parsed tweet create timestamp
 	Published time.Time `json:"published"`
 }

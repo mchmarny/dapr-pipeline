@@ -8,6 +8,8 @@ import (
 
 func TestSimpleSearch(t *testing.T) {
 
+	daprClient = GetTestClient()
+
 	count := 50
 
 	q := &Query{
@@ -23,16 +25,9 @@ func TestSimpleSearch(t *testing.T) {
 
 func TestSearchErrors(t *testing.T) {
 
+	daprClient = GetTestClient()
+
 	_, err := search(nil)
-	assert.NotNil(t, err)
-
-	tooHighCount := maxTweets + 1
-	q := &Query{
-		Query: "test",
-		Count: tooHighCount,
-	}
-
-	_, err = search(q)
 	assert.NotNil(t, err)
 
 }

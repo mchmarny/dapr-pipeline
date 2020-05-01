@@ -27,7 +27,7 @@ var (
 	accessSecret   = env.MustGetEnvVar("TW_ACCESS_SECRET", "")
 
 	// dapr
-	daprClient = dapr.NewClient()
+	daprClient Client
 
 	stateStore = env.MustGetEnvVar("PRODUCER_STATE_STORE_NAME", "producer")
 	eventTopic = env.MustGetEnvVar("PRODUCER_RESULT_TOPIC_NAME", "tweets")
@@ -36,6 +36,8 @@ var (
 func main() {
 
 	gin.SetMode(gin.ReleaseMode)
+
+	daprClient = dapr.NewClient()
 
 	// router
 	r := gin.New()
@@ -52,4 +54,10 @@ func main() {
 		logger.Fatal(err)
 	}
 
+}
+
+type Client interface {
+	GetData(store, key string) (data []byte, err error)
+	SaveData(store, key string, data interface{}) error
+	Publish(topic string, data interface{}) error
 }

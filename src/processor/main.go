@@ -22,16 +22,22 @@ var (
 	servicePort = env.MustGetEnvVar("PORT", "8082")
 
 	// dapr
-	daprClient = dapr.NewClient()
+	daprClient Client
 
 	sourceTopic    = env.MustGetEnvVar("PROCESSOR_SOURCE_TOPIC_NAME", "tweets")
 	processedTopic = env.MustGetEnvVar("PROCESSOR_RESULT_TOPIC_NAME", "processed")
 	alertBinding   = env.MustGetEnvVar("PROCESSOR_ALERT_BINDING_NAME", "alert")
+
+	apiEndpoint = env.MustGetEnvVar("PROCESSOR_API_ENDPOINT", "westus2.api.cognitive.microsoft.com")
+	apiToken    = env.MustGetEnvVar("PROCESSOR_API_TOKEN", "")
 )
 
 func main() {
 
 	gin.SetMode(gin.ReleaseMode)
+
+	// client
+	daprClient = dapr.NewClient()
 
 	// router
 	r := gin.New()
@@ -53,4 +59,9 @@ func main() {
 		logger.Fatal(err)
 	}
 
+}
+
+type Client interface {
+	Publish(topic string, data interface{}) error
+	Send(binding string, data interface{}) error
 }

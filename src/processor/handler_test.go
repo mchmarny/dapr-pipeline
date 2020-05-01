@@ -15,6 +15,8 @@ func TestSubscribeHandler(t *testing.T) {
 
 	gin.SetMode(gin.ReleaseMode)
 
+	daprClient = &TestClient{}
+
 	r := gin.Default()
 	r.GET("/", subscribeHandler)
 	w := httptest.NewRecorder()
@@ -37,6 +39,8 @@ func TestEventProcessorHandler(t *testing.T) {
 
 	gin.SetMode(gin.ReleaseMode)
 
+	daprClient = &TestClient{}
+
 	r := gin.Default()
 	r.POST("/", eventHandler)
 	w := httptest.NewRecorder()
@@ -48,7 +52,7 @@ func TestEventProcessorHandler(t *testing.T) {
 		"specversion":"0.3",
 		"datacontenttype":"application/json",
 		"data":{
-			"id":1249435923240104999,
+			"id":"1249435923240104999",
 			"query":"serverless",
 			"author":"test",
 			"content":"test message",
@@ -63,4 +67,15 @@ func TestEventProcessorHandler(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 
+}
+
+type TestClient struct {
+}
+
+func (c *TestClient) Publish(topic string, data interface{}) error {
+	return nil
+}
+
+func (c *TestClient) Send(binding string, data interface{}) error {
+	return nil
 }

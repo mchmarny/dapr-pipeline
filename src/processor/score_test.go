@@ -7,11 +7,17 @@ import (
 )
 
 const (
-	goodText = "I like how this food tastes, it makes me happy"
-	badText  = "Your team sucks and awful this season"
+	goodText     = "I like how this food tastes, it makes me happy"
+	negativeText = "Your football team is really bad, they are awful this season"
 )
 
+// go test -v -count=1 -run TestScoring ./...
 func TestScoring(t *testing.T) {
-	assert.Equal(t, score(goodText), 1)
-	assert.Equal(t, score(badText), 0)
+	gs, err := score(goodText)
+	assert.Nil(t, err, "error scoring good text")
+	assert.GreaterOrEqual(t, gs, float64(0.6))
+
+	bs, err := score(negativeText)
+	assert.Nil(t, err, "error scoring negative text")
+	assert.LessOrEqual(t, bs, float64(sentimentAlertThreshold))
 }

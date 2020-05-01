@@ -39,10 +39,22 @@ window.onload = function () {
             console.log(e);
             var t = JSON.parse(e.data);
             console.log(t);
+
+            var scoreStr = ""
+            var score = parseFloat(t.sentiment)
+            if (score <= parseFloat(0.3)) {
+                scoreStr = "negative"
+            } else if (score >= parseFloat(0.6)) {
+                scoreStr = "positive"
+            }else {
+                scoreStr = "neutral"
+            }
+            
+
             var item = document.createElement("div");
             item.className = "item";
             var tmsg = "<img src='" + t.author_pic + "' class='profile-pic' />" +
-                "<div class='item-text'><b><img src='static/img/s" + t.sentiment +
+                "<div class='item-text'><b><img src='static/img/" + scoreStr +
                 ".svg' alt='sentiment' class='sentiment' />" + t.author +
                 "<a href='https://twitter.com/" + t.author + "/status/" + t.id +
                 "' target='_blank'><img src='static/img/tw.svg' class='tweet-link' /></a></b>" +

@@ -16,7 +16,7 @@ Exposes query API (`/query`) to which users can post their Twitter queries (e.g.
 
 ### processor
 
-Subscribes to the `tweets` topic using (`/dapr/subscribe`) service and scores the sentiment of each submitted event using simple probabalistic model (the model was trained on IMDB movie reviews so it's not always most accurate but fine for this demo). All scored content is then published to `processed` topic (`/v1.0/publish/processed`) while the negative content is sent also to an external alerting service configured in `dapr` as an HTTP binding (`/v1.0/bindings/alert`).
+Subscribes to the `tweets` topic using (`/dapr/subscribe`) service and scores the sentiment of each submitted event using [Text Analytics API (v3.0-preview.1)](https://westus.dev.cognitive.microsoft.com/docs/services/TextAnalytics-v3-0-Preview-1/operations/Sentiment). All scored content is then published to `processed` topic (`/v1.0/publish/processed`) while the negative content is sent also to an external alerting service configured in `dapr` as an HTTP binding (`/v1.0/bindings/alert`).
 
 ### viewer
 
@@ -136,9 +136,7 @@ Just like with the previous two, you will see this on successful start:
 
 Once all three microservices are running, you can launch the `viewer` dashboard by navigating in your browser to http://localhost:8083/
 
-![](resource/image/ui.png)
-
-> Note, the model used to score these tweets is basic. It was trained on IMDB movie reviews and it's used here purely for demo purposes.
+![](resource/image/ui.png)  
 
 Once we submit queries, you will see each tweet with its sentiment scored listed here. The icon left of the tweet author's username will indicate the sentiment (positive <img src="resource/static/img/s1.svg" width="25" style="vertical-align:middle"> and negative <img src="resource/static/img/s0.svg" width="25" style="vertical-align:middle">). The Twitter logo, right of the username, can will provide a link to the original tweet on https://twitter.com.
 

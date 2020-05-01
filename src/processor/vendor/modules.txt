@@ -1,10 +1,3 @@
-# github.com/cdipaolo/goml v0.0.0-20190412180403-e1f51f713598
-## explicit
-github.com/cdipaolo/goml/base
-github.com/cdipaolo/goml/text
-# github.com/cdipaolo/sentiment v0.0.0-20170111084539-5ab0aec020b4
-## explicit
-github.com/cdipaolo/sentiment
 # github.com/cloudevents/sdk-go/v2 v2.0.0-preview8
 ## explicit
 github.com/cloudevents/sdk-go/v2
@@ -71,6 +64,7 @@ github.com/modern-go/concurrent
 ## explicit
 github.com/modern-go/reflect2
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
@@ -113,8 +107,6 @@ go.uber.org/zap/zapcore
 # golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
 ## explicit
 golang.org/x/sys/unix
-# golang.org/x/text v0.3.2
-golang.org/x/text/transform
 # google.golang.org/protobuf v1.21.0
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
