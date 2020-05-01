@@ -39,6 +39,10 @@ To run this demo locally, you will have to have install [dapr](https://github.co
 
 To query Twitter API you will also need the consumer key and secret. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
 
+#### Cognitive Services
+
+To analyze the sentiment you will also need an API token for the Azure [Cognitive Services](https://azure.microsoft.com/en-us/services/cognitive-services/). You can learn more about the API and how to configure it [here](https://docs.microsoft.com/en-us/azure/cognitive-services/text-analytics/how-tos/text-analytics-how-to-sentiment-analysis?tabs=version-2#sentiment-analysis-versions-and-features).
+
 ### Setup
 
 Assuming you have all the prerequisites mentioned above you can demo this dapr pipeline in following steps. First, start by cloning this repo:
@@ -97,6 +101,12 @@ Assuming everything went OK, you should see something like this:
 ```
 
 #### Processor
+
+Before starting the `processor`, you will need to export your Azure Cognitive Services API key (see the [Prerequisites](#prerequisites) section for details).
+
+```shell
+export PROCESSOR_API_TOKEN="..."
+```
 
 To run the `processor`, in a another terminal window execute but still in the `dapr-pipeline` directory run:
 
