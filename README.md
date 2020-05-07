@@ -2,32 +2,11 @@
 
 Example of Twitter event processing pipeline using dapr framework.
 
-![alt text](resource/image/pipeline1.svg "Pipeline Overview")
-
-> I built this pipeline as a way of learning dapr. Please, do open an issue if you find a bug or where I'm not following the best practices. You can find my notes from this experience [here](./NOTES.md).
-
-## What does it do
-
-This pipeline consists of three services:
-
-### producer
-
-Exposes query API (`/query`) to which users can post their Twitter queries (e.g. `serverless AND dapr`). These queries are used then to search Twitter API, and after filtering out re-tweets (RT), the matching tweet text along with a small part of meta-data as converted into a generic content payload (e.g. id, author, created on, text) and published to the `tweets` topic (`/v1.0/publish/tweets`). To avoid duplication, the `producer` services persists the last ID from each search result in `dapr` state service (`/v1.0/state/producer`) to use it as the `since_id` in subsequent Twitter API queries.
-
-### processor
-
-Subscribes to the `tweets` topic using (`/dapr/subscribe`) service and scores the sentiment of each submitted event using [Text Analytics API (v3.0-preview.1)](https://westus.dev.cognitive.microsoft.com/docs/services/TextAnalytics-v3-0-Preview-1/operations/Sentiment). All scored content is then published to `processed` topic (`/v1.0/publish/processed`) while the negative content is sent also to an external alerting service configured in `dapr` as an HTTP binding (`/v1.0/bindings/alert`).
-
-### viewer
-
-Subscribes to the `processed` topic using (`/dapr/subscribe`) service and stream all received events into a WebSocket connection created by the UI application which displays the content on the dashboard.
-
-> This pipeline uses a [godapr](https://github.com/mchmarny/godapr) HTTP client library which hides all the `dapr` specific logic
-
+![alt text](resource/image/overview-local.png "Local Pipeline Overview")
 
 ## How do I run it
 
-> I'm covering here the local deployment. The Kubernetes deployment instructions are located [here](./deployment/)
+> This readme covers local deployment. For Kubernetes deployment instructions [see here](./deployment/)
 
 ### Prerequisites
 
@@ -37,7 +16,7 @@ To run this demo locally, you will have to have install [dapr](https://github.co
 
 #### Twitter
 
-To query Twitter API you will also need the consumer key and secret. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
+To use the Dapr twitter binding you will need the consumer key and secret. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
 
 #### Cognitive Services
 
@@ -48,7 +27,7 @@ To analyze the sentiment you will also need an API token for the Azure [Cognitiv
 Assuming you have all the prerequisites mentioned above you can demo this dapr pipeline in following steps. First, start by cloning this repo:
 
 ```shell
-git clone https://github.com/mchmarny/dapr-pipeline.git
+git clone https://github.com/mchmarny/dapr-pipeline.git@demo
 ```
 
 and then navigate into the `dapr-pipeline` directory:
@@ -69,70 +48,40 @@ bin/build
 
 This pipeline consists of three microservices: Provider, Processor, and Viewer. In the `dapr-pipeline` directory follow these instructions on launching each one of these services:
 
-#### Provider
 
-Before starting the `provider`, you will need to export your Twitter API consumer and access keys (see the [Prerequisites](#prerequisites) section for details).
+#### Sentimenter
+
+Before starting the `sentimenter`, you will need to export your Azure Cognitive Services API key (see the [Prerequisites](#prerequisites) section for details).
 
 ```shell
-export TW_CONSUMER_KEY="..."
-export TW_CONSUMER_SECRET="..."
-export TW_ACCESS_TOKEN="..."
-export TW_ACCESS_SECRET="..."
+export CS_TOKEN="..."
 ```
 
-Once the Twitter API consumer and access details are set, you are ready to run the `provider`:
-
-> For environments other than mac you will have to append the OS name to the executable to each one of the `run` commands (e.g. for Linux `bin/producer-linux` and for Windows `bin/producer-windows`)
+To run the `sentimenter`, in a another terminal window execute but still in the `dapr-pipeline` directory run:
 
 ```shell
-dapr run bin/producer \
-         --app-id producer \
-         --app-port 8081 \
-         --protocol http \
-         --max-concurrency 1 \
-         --port 3500
-```
-
-Assuming everything went OK, you should see something like this:
-
-```shell
-ℹ️  Updating metadata for app command: bin/producer
-✅  You're up and running! Both Dapr and your app logs will appear here.
-```
-
-#### Processor
-
-Before starting the `processor`, you will need to export your Azure Cognitive Services API key (see the [Prerequisites](#prerequisites) section for details).
-
-```shell
-export PROCESSOR_API_TOKEN="..."
-```
-
-To run the `processor`, in a another terminal window execute but still in the `dapr-pipeline` directory run:
-
-```shell
-dapr run bin/processor \
-         --app-id processor \
-         --app-port 8082 \
-         --protocol http
+dapr run bin/sentimenter \
+          --app-id sentimenter \
+          --app-port 8082 \
+          --protocol http
 ```
 
 Again, if everything goes well, you will see:
 
 ```shell
-ℹ️  Updating metadata for app command: bin/processor
+ℹ️  Updating metadata for app command: bin/sentimenter
 ✅  You're up and running! Both Dapr and your app logs will appear here.
 ```
 
 #### Viewer
 
-Finally, once `provider` and `processor` are running, you are ready to run `viewer`. In yet another terminal window run:
+Next, start `viewer`. In yet another terminal window run:
 
 ```shell
 dapr run bin/viewer \
-         --app-id viewer \
-         --app-port 8083 \
-         --protocol http
+          --app-id viewer \
+          --app-port 8083 \
+          --protocol http
 ```
 
 Just like with the previous two, you will see this on successful start:
@@ -141,6 +90,53 @@ Just like with the previous two, you will see this on successful start:
 ℹ️  Updating metadata for app command: bin/viewer
 ✅  You're up and running! Both Dapr and your app logs will appear here.
 ```
+
+While there still won't be any data, at this point you should be able to navigate to the viewer UI
+
+http://localhost:8083/
+
+
+#### Processor
+
+Finally you can start the `processor`. Just remember to set the Twitter API consumer and access keys (see the [Prerequisites](#prerequisites)) in the [components/twitter.yaml](components/twitter.yaml) file. 
+
+```yaml
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: tweets
+spec:
+  type: bindings.twitter
+  metadata:
+  - name: consumerKey
+    value: ""
+  - name: consumerSecret
+    value: ""
+  - name: accessToken
+    value: ""
+  - name: accessSecret
+    value: ""
+  - name: query
+    value: "serverless" # use often tweeted topic for test 
+```
+
+Once the Twitter API consumer and access details are set, you are ready to run the `processor`:
+
+```shell
+dapr run bin/processor \
+         --app-id processor \
+         --app-port 8081 \
+         --protocol http \
+         --port 3500
+```
+
+Assuming everything went OK, you should see something like this:
+
+```shell
+ℹ️  Updating metadata for app command: bin/processor
+✅  You're up and running! Both Dapr and your app logs will appear here.
+```
+
 
 ### Dashboard
 
