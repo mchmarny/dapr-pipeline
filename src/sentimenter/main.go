@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,7 @@ func main() {
 	// router
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(Options)
 
 	// simple routes
 	r.GET("/", defaultHandler)
@@ -41,4 +43,18 @@ func main() {
 		logger.Fatal(err)
 	}
 
+}
+
+// Options midleware
+func Options(c *gin.Context) {
+	if c.Request.Method != "OPTIONS" {
+		c.Next()
+	} else {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "POST,OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
+		c.Header("Allow", "POST,OPTIONS")
+		c.Header("Content-Type", "application/json")
+		c.AbortWithStatus(http.StatusOK)
+	}
 }
