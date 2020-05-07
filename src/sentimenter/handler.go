@@ -28,7 +28,7 @@ func scoreHandler(c *gin.Context) {
 	logger.Printf("received scoring request: %v", r)
 
 	// score the content sentiment
-	score, err := scoreSentiment(r.Text)
+	score, err := scoreSentiment(r.Text, r.Lang)
 	if err != nil {
 		logger.Printf("error scoring sentiment: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -58,4 +58,6 @@ type SimpleScore struct {
 type ScoreRequest struct {
 	// Text is the text to be scored
 	Text string `json:"text"`
+	// Lang is the lang of the text
+	Lang string `json:"lang"`
 }

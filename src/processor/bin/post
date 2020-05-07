@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+
+curl -d "@./tweet.json" \
+     -H "Content-type: application/json" \
+     "http://localhost:8081/tweets"

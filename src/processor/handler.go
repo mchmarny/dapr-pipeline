@@ -52,7 +52,11 @@ func tweetHandler(c *gin.Context) {
 
 	sentimentReq := struct {
 		Text string `json:"text"`
-	}{content}
+		Lang string `json:"lang"`
+	}{
+		content,
+		t.Lang,
+	}
 
 	// score simple tweet
 	b, err := daprClient.InvokeService(scoreService, scoreMethod, sentimentReq)

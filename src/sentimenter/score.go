@@ -40,9 +40,13 @@ type Response struct {
 	Docs []*ResponseItem `json:"documents"`
 }
 
-func scoreSentiment(txt string) (sentiment float64, err error) {
+func scoreSentiment(txt, lang string) (sentiment float64, err error) {
 	if txt == "" {
 		return 0, errors.New("nil txt")
+	}
+
+	if lang == "" {
+		lang = "en"
 	}
 
 	// content array for request
@@ -50,7 +54,7 @@ func scoreSentiment(txt string) (sentiment float64, err error) {
 		Docs: []*RequestItem{
 			&RequestItem{
 				ID:       defaultDocID,
-				Language: "en",
+				Language: lang,
 				Text:     txt,
 			},
 		},

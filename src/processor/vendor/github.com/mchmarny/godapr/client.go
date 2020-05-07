@@ -148,7 +148,8 @@ func (c *Client) Bind(binding string, data interface{}) error {
 // InvokeService serializes input data to JSON and invokes the remote service method
 func (c *Client) InvokeService(service, method string, in interface{}) (out []byte, err error) {
 	url := fmt.Sprintf("%s/v1.0/invoke/%s/method/%s", c.BaseURL, service, method)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	b, _ := json.Marshal(in)
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
