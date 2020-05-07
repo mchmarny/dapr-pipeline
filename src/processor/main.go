@@ -26,10 +26,10 @@ var (
 	// test client against local interace
 	_ = Client(dapr.NewClient())
 
-	stateStore   = env.MustGetEnvVar("PRODUCER_STATE_STORE_NAME", "tweet-store")
-	eventTopic   = env.MustGetEnvVar("PRODUCER_PUBSUB_TOPIC_NAME", "processed")
-	scoreService = env.MustGetEnvVar("PRODUCER_SCORE_SERVICE_NAME", "sentimenter")
-	scoreMethod  = env.MustGetEnvVar("PRODUCER_SCORE_METHOD_NAME", "score")
+	stateStore   = env.MustGetEnvVar("PROCESSOR_STATE_STORE_NAME", "tweet-store")
+	eventTopic   = env.MustGetEnvVar("PROCESSOR_PUBSUB_TOPIC_NAME", "processed")
+	scoreService = env.MustGetEnvVar("PROCESSOR_SCORE_SERVICE_NAME", "sentimenter")
+	scoreMethod  = env.MustGetEnvVar("PROCESSOR_SCORE_METHOD_NAME", "score")
 )
 
 func main() {

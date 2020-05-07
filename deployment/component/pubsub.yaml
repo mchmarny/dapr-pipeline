@@ -1,11 +1,11 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: tweets
+  name: processed
 spec:
   type: pubsub.azure.servicebus
   metadata:
   - name: connectionString
     secretKeyRef:
-      name: pipeline-bus
+      name: demo-pubsub-secret
       key: connection-string

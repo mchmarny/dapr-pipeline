@@ -4,6 +4,7 @@ metadata:
   name: processor
   labels:
     app: processor
+    env: demo
 spec:
   replicas: 1
   selector:
@@ -13,29 +14,30 @@ spec:
     metadata:
       labels:
         app: processor
+        env: demo
       annotations:
         dapr.io/enabled: "true"
         dapr.io/id: "processor"
-        dapr.io/port: "8082"
+        dapr.io/port: "8081"
         dapr.io/log-as-json: "true"
         dapr.io/config: "tracing"
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9090"
-        prometheus.io/path: "/"
     spec:
       containers:
-      - name: processor
-        image: mchmarny/processor:v0.5.2
+      - name: user-container
+        image: mchmarny/processor:v0.6.1
+        imagePullPolicy: Always
         ports:
-        - containerPort: 8082
+        - containerPort: 8081
         env:
         - name: PORT
-          value: "8082"
+          value: "8081"
         - name: DAPR_HTTP_PORT
-          value: "3500"
-        - name: PRODUCER_RESULT_TOPIC_NAME
-          value: tweets
-        - name: PROCESSOR_RESULT_TOPIC_NAME
-          value: processed
-        - name: PROCESSOR_ALERT_BINDING_NAME
-          value: alert
+        value: "3500"
+        - name: PROCESSOR_STATE_STORE_NAME
+          value: "tweet-store"
+        - name: PROCESSOR_PUBSUB_TOPIC_NAME
+        value: "processed"
+        - name: PROCESSOR_SCORE_SERVICE_NAME
+        value: "sentimenter"
+        - name: PROCESSOR_SCORE_METHOD_NAME
+        value: "score"

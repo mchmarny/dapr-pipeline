@@ -21,7 +21,7 @@ az configure --defaults location=<prefered location> group=<your resource group>
 If you don't already have Kubernates cluster, you can create it on Azure with all the necessary add-ons for this demo usign tihs command:
 
 ```shell
-az aks create --name daprdemo \
+az aks create --name demo \
               --kubernetes-version 1.15.10 \
               --enable-managed-identity \
               --vm-set-type VirtualMachineScaleSets \
@@ -42,10 +42,10 @@ Assuming you have a Kubernates cluster and `kubectl` CLI configure to connect yo
 
 ### State
 
-To configure `dapr` state component in this demo I will use Azure Table Storage. To set it up, follow [these instructions](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal). Once finished, you will need to cofigure also the Kubernates secrets to hold the Azure Table Storage account information:
+To configure `dapr` state component in this demo I will use Azure Table Storage. To set it up, follow [these instructions](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal). Once finished, you will need to configure also the Kubernates secrets to hold the Azure Table Storage account information:
 
 ```shell
-kubectl create secret generic pipeline-state \
+kubectl create secret generic demo-state-secret \
   --from-literal=account-name='' \
   --from-literal=account-key=''
 ```
@@ -62,82 +62,81 @@ To configure `dapr` pubsub component in this demo I will use Azure Service Bus. 
 
 
 ```shell
-kubectl create secret generic pipeline-bus \
+kubectl create secret generic demo-pubsub-secret \
   --from-literal=connection-string=''
 ```
 
 Once the secret is configured, deploy the `dapr` pubsub topic components:
 
 ```shell
-kubectl apply -f component/processed.yaml \
-              -f component/tweet.yaml
+kubectl apply -f deployment/component/pubsub.yaml
 ```
 
-### Binding 
+### Twitter Input Binding  
 
-To configure `dapr` binding component in this demo I will use a simple service offered by thingspeak.com that does not require any additional configuration. 
+Finally, to use the Dapr Twitter input binding we need to configure the Twitter API secretes. You can get these by registering Twitter application and obtain this information [here](https://developer.twitter.com/en/apps/create).
 
 ```shell
-kubectl apply -f component/alert.yaml
+kubectl create secret generic demo-twitter-secrets \
+  --from-literal=access-secret="" \
+  --from-literal=access-token="" \
+  --from-literal=consumer-key="" \
+  --from-literal=consumer-secret=""
 ```
 
-## Deploy pipeline 
-
-Before deploying the actual pipeline you will have to create one more secret, the Twitter API credentials for `producer`. You can get these by registering a Twitter application [here](https://developer.twitter.com/en/apps/create).
+Once the secret is configured you can deploy the Twitter binding:
 
 ```shell
-kubectl create secret generic pipeline-twitter \
-  --from-literal=access-secret: '' \
-  --from-literal=access-token: '' \
-  --from-literal=consumer-key: '' \
-  --from-literal=consumer-secret: ''
+kubectl apply -f component/twitter.yaml
 ```
 
-Once the `pipeline-twitter` secret is created, you are ready to deploy the entire pipeline (`producer`, `processor`, `viewer`
+## Deploying Demo 
+
+Once the necessary components are created, you just need to create one more secret for the Cognitive Service token that is used in the `processor` service: 
 
 ```shell
-kubectl apply -f producer.yaml \
-              -f processor.yaml \
-              -f viewer.yaml
+kubectl create secret generic demo-sentimenter-secret \
+  --from-literal=token=""
 ```
 
-### Exposign viewer UI
-
-To expose the viewer application extertnally, create Kubernetes `service` and `ingress` using [route.yaml](./viewer-route.yaml)
+And now you can deploy the entire pipeline (`provider`, `processor`, `viewer`) with a single command:
 
 ```shell
-kubectl apply -f viewer-route.yaml
+kubectl apply -f sentimenter.yaml \
+              -f viewer.yaml \
+              -f processor.yaml
 ```
 
-> You will have to change the ingress host rule to DNS you can actually control. I own `things.io` so in this case I created an `A` record to point to the ingress IP. 
-
-```yaml
-rules:
-  - host: dapr.thingz.io
- ```
-
-You can find the IP address assigned to the viewer ingress on your cluster using:
-
-`kubectl get ingress viewer`
-
-At this point you should be able to access the demo UI using the DNS defined in your `ingress` (e.g. dapr.thingz.io)
-
-## Invoking query
-
-To submit query similar to the way described in the local developemnt demo, you will have to forward the local port to the `producer-dapr` service.
+You can check on the status of your deployment like this: 
 
 ```shell
-kubectl port-forward service/producer-dapr 8080:80
+kubectl get pods -l env=demo
 ```
 
-> I'm using simple port forwarding to allow only me to submit queries. Exposign the producer service externally like we did with the viewer would enable anyone in the world to submit queries.
-
-Once forwarded, you can execute queries like this: 
+The results should look similar to this (make sure each pod has READY status 2/2)
 
 ```shell
-curl -d '{ "query": "serverless OR faas OR dapr", "lang": "en" }' \
-     -H "Content-type: application/json" \
-     "http://localhost:8080/v1.0/invoke/producer/method/query"
+NAME                           READY   STATUS    RESTARTS   AGE
+processor-89666d54b-hkd5t      2/2     Running   0          18s
+sentimenter-85cfbf5456-lc85g   2/2     Running   0          18s
+viewer-76448d65fb-bm2dc        2/2     Running   0          18s
 ```
 
-If everything went OK, you should see the tweets with sentiment score appear on the UI. 
+### Exposing viewer UI
+
+To expose the viewer application externally, create Kubernetes `service` using [deployment/service/viewer.yaml](deployment/service/viewer.yaml)
+
+```shell
+kubectl apply -f service/viewer.yaml
+```
+
+> Note, the provisioning of External IP may take up to 3 min 
+
+To view the viewer application by capturing the load balancer public IP and opening it in the browser:
+
+```shell
+export VIEWER_IP=$(kubectl get svc viewer --output 'jsonpath={.status.loadBalancer.ingress[0].ip}')
+open "http://${VIEWER_IP}/"
+```
+
+> To change the Twitter topic query, first edit the [deployment/component/twitter.yaml](deployment/component/twitter.yaml), then apply it (`kubectl apply -f component/twitter.yaml`), and finally, restart the processor (`kubectl rollout restart deployment processor`) to ensure the new configuration is applied. 
