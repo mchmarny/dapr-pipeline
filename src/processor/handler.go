@@ -2,22 +2,20 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
-	ce "github.com/cloudevents/sdk-go/v2"
 	"github.com/gin-gonic/gin"
+
+	"github.com/dghubble/go-twitter/twitter"
 )
 
-const (
-	// SupportedCloudEventVersion indicates the version of CloudEvents suppored by this handler
-	SupportedCloudEventVersion = "0.3"
-
-	//SupportedCloudEventContentTye indicates the content type supported by this handlers
-	SupportedCloudEventContentTye = "application/json"
-
-	sentimentAlertThreshold = float64(0.3)
+var (
+	clientError = gin.H{
+		"error":   "Bad Request",
+		"message": "Error processing your request, see logs for details",
+	}
 )
 
 func defaultHandler(c *gin.Context) {
@@ -28,112 +26,93 @@ func defaultHandler(c *gin.Context) {
 	})
 }
 
-func subscribeHandler(c *gin.Context) {
-	topics := []string{sourceTopic}
-	c.JSON(http.StatusOK, topics)
-}
+func tweetHandler(c *gin.Context) {
 
-func eventHandler(c *gin.Context) {
-
-	e := ce.NewEvent()
-	if err := c.ShouldBindJSON(&e); err != nil {
-		logger.Printf("error binding event: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Bad Request",
-			"message": "Error processing your request, see logs for details",
-		})
+	var t twitter.Tweet
+	if err := c.ShouldBindJSON(&t); err != nil {
+		logger.Printf("error binding tweet: %v", err)
+		c.JSON(http.StatusBadRequest, clientError)
 		return
 	}
 
-	// logger.Printf("received event: %v", e.Context)
+	logger.Printf("tweet: %s", t.IDStr)
 
-	eventVersion := e.Context.GetSpecVersion()
-	if eventVersion != SupportedCloudEventVersion {
-		logger.Printf("invalid event spec version: %s", eventVersion)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Bad Request",
-			"message": fmt.Sprintf("Invalid spec version (want: %s got: %s)",
-				SupportedCloudEventVersion, eventVersion),
-		})
-		return
-	}
-
-	eventContentType := e.Context.GetDataContentType()
-	if eventContentType != SupportedCloudEventContentTye {
-		logger.Printf("invalid event content type: %s", eventContentType)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Bad Request",
-			"message": fmt.Sprintf("Invalid content type (want: %s got: %s)",
-				SupportedCloudEventContentTye, eventContentType),
-		})
-		return
-	}
-
-	var t SimpleContent
-	if err := json.Unmarshal(e.Data(), &t); err != nil {
-		logger.Printf("error parsing event content: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Bad Request",
-			"message": "Invalid content payload, see log processor log for details",
-		})
-		return
-	}
-
-	// logger.Printf("tweet: %v", t)
-
-	// score the content sentiment
-	sentiment, err := score(t.Content)
+	// save original tweet in case we need to reprocess it
+	err := daprClient.SaveState(stateStore, t.IDStr, t)
 	if err != nil {
-		logger.Printf("error scoring sentiment: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Server Error",
-			"message": "Error scoring sentiment, see processor log for details",
-		})
-		return
-	}
-	t.Sentiment = sentiment
-
-	// publish all
-	if err := daprClient.Publish(processedTopic, t); err != nil {
-		logger.Printf("error on processor result publish %v: %v", t, err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Server Error",
-			"message": "Error publishing result, see processor log for details",
-		})
+		logger.Printf("error saving state: %v", err)
+		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
 
-	// if negative then send alert
-	if t.Sentiment <= sentimentAlertThreshold {
-		logger.Printf("alert threshold %f reached: %f, sending alert", sentimentAlertThreshold, t.Sentiment)
-		if err := daprClient.Send(alertBinding, t); err != nil {
-			logger.Printf("error on sendign alert to binding %v: %v", alertBinding, err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "Server Error",
-				"message": "Error sending alert, see processor log for details",
-			})
-			return
-		}
+	content := t.FullText
+	if content == "" {
+		content = t.Text
 	}
 
-	c.JSON(http.StatusOK, nil)
+	sentimentReq := struct {
+		Text string `json:"text"`
+	}{content}
+
+	// score simple tweet
+	b, err := daprClient.InvokeService(scoreService, scoreMethod, sentimentReq)
+	if err != nil {
+		logger.Printf("error invoking scoring service (%s/%s): %v",
+			scoreService, scoreMethod, err)
+		c.JSON(http.StatusInternalServerError, clientError)
+		return
+	}
+
+	sentimentRes := struct {
+		Score float64 `json:"score"`
+	}{}
+
+	if err := json.Unmarshal(b, &sentimentRes); err != nil {
+		logger.Printf("error parsing scoring service response (%s): %v", string(b), err)
+		c.JSON(http.StatusInternalServerError, clientError)
+		return
+	}
+
+	// create simple tweet from status for scoring and display
+	s := &SimpleTweet{
+		ID:        t.IDStr,
+		Author:    strings.ToLower(t.User.ScreenName),
+		AuthorPic: t.User.ProfileImageURLHttps,
+		Published: convertTwitterTime(t.CreatedAt),
+		Content:   content,
+		Score:     sentimentRes.Score,
+	}
+
+	// publish simple tweet
+	if err = daprClient.Publish(eventTopic, s); err != nil {
+		logger.Printf("error publishing content (%+v): %v", s, err)
+		c.JSON(http.StatusInternalServerError, clientError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }
 
-// SimpleContent represents most
-type SimpleContent struct {
+func convertTwitterTime(v string) time.Time {
+	t, err := time.Parse(time.RubyDate, v)
+	if err != nil {
+		t = time.Now()
+	}
+	return t.UTC()
+}
+
+// SimpleTweet represents the Twiter query result item
+type SimpleTweet struct {
 	// ID is the string representation of the tweet ID
 	ID string `json:"id"`
-	// Query is the text of the original query
-	Query string `json:"query"`
 	// Author is the name of the tweet user
 	Author string `json:"author"`
 	// AuthorPic is the url to author profile pic
 	AuthorPic string `json:"author_pic"`
 	// Content is the full text body of the tweet
 	Content string `json:"content"`
-	// Sentiment is the 0 to 1 score of the sentiment
-	// (0-0.3 bad, 0.3-0.6 neutral, 0.6-1 positive)
-	Sentiment float64 `json:"sentiment"`
+	// Content is the sentiment score of the content
+	Score float64 `json:"score"`
 	// Published is the parsed tweet create timestamp
 	Published time.Time `json:"published"`
 }

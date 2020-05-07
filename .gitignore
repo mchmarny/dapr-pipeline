@@ -8,15 +8,16 @@
 .DS_Store
 
 # auto-generated components now used in pipeline
-components/statestore.yaml
-components/twitter.yaml
-src/producer/components/statestore.yaml
-src/processor/components/statestore.yaml
+src/processor/components/twitter.yaml
+src/sentimenter/components/processor.yaml
+src/sentimenter/components/statestore.yaml
 src/viewer/components/pubsub.yaml
 src/viewer/components/statestore.yaml
+components/twitter.yaml
 
 # locally build binariees
-bin/producer*
 bin/processor*
+bin/sentimenter*
 bin/viewer*
 bin/*.zip
+

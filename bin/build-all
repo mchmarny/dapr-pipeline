@@ -34,17 +34,17 @@ function build_release {
 }
 
 build_release "processor"
-build_release "producer"
+build_release "sentimenter"
 build_release "viewer"
 
 echo "Compressing OS specific releases..."
 zip -r "bin/dapr-pipeline-mac-${RELEASE_VERSION}.zip" \
-    bin/producer-mac bin/processor-mac bin/viewer-mac
+    bin/processor-mac bin/sentimenter-mac bin/viewer-mac
 
 zip -r "bin/dapr-pipeline-linux-${RELEASE_VERSION}.zip" \
-    bin/producer-linux bin/processor-linux bin/viewer-linux
+    bin/processor-linux bin/sentimenter-linux bin/viewer-linux
 
 zip -r "bin/dapr-pipeline-windows-${RELEASE_VERSION}.zip" \
-    bin/producer-windows bin/processor-windows bin/viewer-windows
+    bin/processor-windows bin/sentimenter-windows bin/viewer-windows
 
 echo "DONE"

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+
+go mod tidy
+go mod vendor
+
+dapr run go run score.go handler.go main.go \
+    --app-id sentimenter \
+    --app-port 8082 \
+    --protocol http
+
+

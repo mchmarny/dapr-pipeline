@@ -6,9 +6,8 @@ set -o pipefail
 go mod tidy
 go mod vendor
 
-dapr run go run score.go handler.go main.go \
-         --app-id processor \
-         --app-port 8082 \
-         --protocol http
-
-
+dapr run go run handler.go main.go \
+    --app-id processor \
+    --app-port 8081 \
+    --protocol http \
+    --port 3500

@@ -1,8 +1,8 @@
 # godapr (simple dapr HTTP client)
 
-dapr has gRPC and REST APIs. While for `go`, there is and nice [gRPC SDK](https://github.com/dapr/go-sdk), and while it's pretty easy to implement HTTP calls to the REST API, one usually ends up with redundant code and dapr API leaking throughout application. So, I create this simple HTTP api to constraint the dapr API to one library and keep all app usage idiomatic.
+dapr has gRPC and REST APIs. For `go`, there is the auto-generated [gRPC SDK](https://github.com/dapr/go-sdk) that covers the complete spectrum of dapr API. Developers can also implement their own HTTP calls to the REST API. When invoking the dapr REST APIs there usually is lot's of redundant code builting request and aprsing response. I create this simple HTTP api to constraint the dapr API to one library.
 
-> Warning, this is a simple library, it does not implements only the most common bits of dapr API.
+> Warning, this library implements only the most common parts of dapr API (state, pubsub, and binding). 
 
 ## Usage
 

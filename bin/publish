@@ -28,7 +28,7 @@ function publish_release {
 }
 
 publish_release "processor"
-publish_release "producer"
+publish_release "sentimenter"
 publish_release "viewer"
 
 echo "DONE"

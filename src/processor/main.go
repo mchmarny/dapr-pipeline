@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -19,24 +18,24 @@ var (
 	AppVersion = "v0.0.1-default"
 
 	// service
-	servicePort = env.MustGetEnvVar("PORT", "8082")
+	servicePort = env.MustGetEnvVar("PORT", "8081")
 
 	// dapr
 	daprClient Client
 
-	sourceTopic    = env.MustGetEnvVar("PROCESSOR_SOURCE_TOPIC_NAME", "tweets")
-	processedTopic = env.MustGetEnvVar("PROCESSOR_RESULT_TOPIC_NAME", "processed")
-	alertBinding   = env.MustGetEnvVar("PROCESSOR_ALERT_BINDING_NAME", "alert")
+	// test client against local interace
+	_ = Client(dapr.NewClient())
 
-	apiEndpoint = env.MustGetEnvVar("PROCESSOR_API_ENDPOINT", "westus2.api.cognitive.microsoft.com")
-	apiToken    = env.MustGetEnvVar("PROCESSOR_API_TOKEN", "")
+	stateStore   = env.MustGetEnvVar("PRODUCER_STATE_STORE_NAME", "tweet-store")
+	eventTopic   = env.MustGetEnvVar("PRODUCER_PUBSUB_TOPIC_NAME", "processed")
+	scoreService = env.MustGetEnvVar("PRODUCER_SCORE_SERVICE_NAME", "sentimenter")
+	scoreMethod  = env.MustGetEnvVar("PRODUCER_SCORE_METHOD_NAME", "score")
 )
 
 func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 
-	// client
 	daprClient = dapr.NewClient()
 
 	// router
@@ -45,12 +44,7 @@ func main() {
 
 	// simple routes
 	r.GET("/", defaultHandler)
-	r.GET("/dapr/subscribe", subscribeHandler)
-
-	// topic route
-	processRoute := fmt.Sprintf("/%s", sourceTopic)
-	logger.Printf("processor route: %s", processRoute)
-	r.POST(processRoute, eventHandler)
+	r.POST("/tweets", tweetHandler)
 
 	// server
 	hostPort := net.JoinHostPort("0.0.0.0", servicePort)
@@ -61,7 +55,9 @@ func main() {
 
 }
 
+// Client is the minim client support for testing
 type Client interface {
+	SaveState(store, key string, data interface{}) error
+	InvokeService(service, method string, data interface{}) (out []byte, err error)
 	Publish(topic string, data interface{}) error
-	Send(binding string, data interface{}) error
 }

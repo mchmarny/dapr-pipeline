@@ -1,0 +1,17 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: dapr # tweets, to map to the /tweets route 
+spec:
+  type: bindings.twitter
+  metadata:
+  - name: consumerKey
+    value: ""
+  - name: consumerSecret
+    value: ""
+  - name: accessToken
+    value: ""
+  - name: accessSecret
+    value: ""
+  - name: query
+    value: "dapr"

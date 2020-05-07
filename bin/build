@@ -48,12 +48,7 @@ function build_release {
 }
 
 build_release "processor"
-build_release "producer"
+build_release "sentimenter"
 build_release "viewer"
-
-echo "coping components and resources ..."
-yes | cp -f src/processor/components/processor.yaml components/processor.yaml
-yes | cp -f src/producer/components/producer.yaml components/producer.yaml
-yes | cp -Rf src/viewer/resource/static src/viewer/resource/template resource/
 
 echo "DONE"
