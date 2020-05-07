@@ -69,7 +69,7 @@ kubectl create secret generic demo-pubsub-secret \
 Once the secret is configured, deploy the `dapr` pubsub topic components:
 
 ```shell
-kubectl apply -f deployment/component/pubsub.yaml
+kubectl apply -f component/pubsub.yaml
 ```
 
 ### Twitter Input Binding  
@@ -130,7 +130,7 @@ To expose the viewer application externally, create Kubernetes `service` using [
 kubectl apply -f service/viewer.yaml
 ```
 
-> Note, the provisioning of External IP may take up to 3 min 
+> Note, the provisioning of External IP may take up to 1-2 min 
 
 To view the viewer application by capturing the load balancer public IP and opening it in the browser:
 

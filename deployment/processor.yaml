@@ -32,12 +32,12 @@ spec:
         - name: PORT
           value: "8081"
         - name: DAPR_HTTP_PORT
-        value: "3500"
+          value: "3500"
         - name: PROCESSOR_STATE_STORE_NAME
           value: "tweet-store"
         - name: PROCESSOR_PUBSUB_TOPIC_NAME
-        value: "processed"
+          value: "processed"
         - name: PROCESSOR_SCORE_SERVICE_NAME
-        value: "sentimenter"
+          value: "sentimenter"
         - name: PROCESSOR_SCORE_METHOD_NAME
-        value: "score"
+          value: "score"
