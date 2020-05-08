@@ -144,7 +144,9 @@ open "http://${VIEWER_IP}/"
 > To change the Twitter topic query, first edit the [deployment/component/twitter.yaml](deployment/component/twitter.yaml), then apply it (`kubectl apply -f component/twitter.yaml`), and finally, restart the processor (`kubectl rollout restart deployment processor`) to ensure the new configuration is applied. 
 
 
-#### Observability 
+## Observability 
+
+### Azure 
 
 You can view the scored tweets in Azure table storage 
 
@@ -154,19 +156,49 @@ Similarly you can monitor the pubsub topic throughout in Azure Service Bus
 
 ![](../resource/image/pubsub.png)
 
-In addition to the state and pubsub, you can also observe Dapr metrics and logs for this demo. 
 
-The Dapr sidecar Grafana dashboard 
+### OSS
+
+In addition, you can also observe Dapr metrics, logs, and traces for this demo. 
+
+#### Metrics in Grafana dashboard 
+
+Forward port
+
+```shell
+kubectl port-forward svc/grafana 8080:80 -n dapr-monitoring
+```
 
 ![](../resource/image/metric.png)
 
-And the Elastic backed Kibana dashboard for logs
+
+#### Logs in Kibana dashboard 
+
+Forward port 
+
+```shell
+kubectl port-forward svc/kibana-kibana 5601 -n dapr-monitoring
+```
+
+http://localhost:8080/
 
 ![](../resource/image/log.png)
 
-If you have Zipkin installed on the cluster, you can enable tracing by applying the tracing config and Zipkin exporter
+http://localhost:5601/
+
+#### Traces in Zipkin dashboard 
+
+Forward port 
+
+```shell
+kubectl port-forward svc/zipkin 9411:9411
+```
+
+![](../resource/image/trace.png)
+
 
 > Note, if your Zipkin isn't deployed in the `default` namespace you will have to edit the `exporterAddress` in [deployment/tracing/zipkin.yaml](deployment/tracing/zipkin.yaml)
+
 
 Then just restart all the deployments 
 
@@ -176,7 +208,7 @@ kubectl rollout restart deployment processor provider viewer
 
 At this point you should be able to access the Zipkin UI (http://localhost:9411/zipkin/)
 
-![](../resource/image/trace.png)
+
 
 
 
