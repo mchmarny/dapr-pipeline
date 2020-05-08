@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 )
 
 func defaultHandler(c *gin.Context) {
@@ -16,6 +18,17 @@ func defaultHandler(c *gin.Context) {
 }
 
 func scoreHandler(c *gin.Context) {
+	// START TRACING
+	wrCtx, _ := opentracing.GlobalTracer().Extract(
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(c.Request.Header))
+	span := opentracing.StartSpan(
+		"sentimenter-handler",
+		ext.RPCServerOption(wrCtx))
+	defer span.Finish()
+	ctx := opentracing.ContextWithSpan(c.Request.Context(), span)
+	// END TRACING
+
 	r := ScoreRequest{}
 	if err := c.ShouldBindJSON(&r); err != nil || r.Text == "" {
 		logger.Printf("error binding scoring request: %v", err)
@@ -28,7 +41,7 @@ func scoreHandler(c *gin.Context) {
 	logger.Printf("received scoring request: %v", r)
 
 	// score the content sentiment
-	score, err := scoreSentiment(c.Request.Context(), r.Text, r.Lang)
+	score, err := scoreSentiment(ctx, r.Text, r.Lang)
 	if err != nil {
 		logger.Printf("error scoring sentiment: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -38,6 +51,8 @@ func scoreHandler(c *gin.Context) {
 		return
 	}
 	logger.Printf("result: %f - %s", score, r.Text)
+	span.SetTag("tweet-score", score)
+	span.SetTag("tweet-text", r.Text)
 
 	c.JSON(http.StatusOK, &SimpleScore{
 		Score: score,

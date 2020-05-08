@@ -3,6 +3,7 @@ module github.com/mchmarny/dapr-pipeline/src/viewer
 go 1.14
 
 require (
+	contrib.go.opencensus.io/exporter/zipkin v0.1.1
 	github.com/cloudevents/sdk-go/v2 v2.0.0-preview8
 	github.com/gin-gonic/gin v1.6.2
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
@@ -11,6 +12,8 @@ require (
 	github.com/mchmarny/gcputil v0.3.3
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/opentracing/opentracing-go v1.1.0
+	github.com/openzipkin/zipkin-go v0.1.6
 	github.com/pkg/errors v0.9.1 // indirect
 	go.opencensus.io v0.22.3
 	go.uber.org/zap v1.15.0 // indirect

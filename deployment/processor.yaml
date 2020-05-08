@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: user-container
-        image: mchmarny/processor:v0.6.1
+        image: mchmarny/processor:v0.6.2
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
@@ -41,3 +41,8 @@ spec:
           value: "sentimenter"
         - name: PROCESSOR_SCORE_METHOD_NAME
           value: "score"
+        - name: TRACE_EXPORTER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: trace-config
+              key: exporter-url

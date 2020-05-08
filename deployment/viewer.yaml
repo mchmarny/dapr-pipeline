@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: user-container
-        image: mchmarny/viewer:v0.6.1
+        image: mchmarny/viewer:v0.6.2
         imagePullPolicy: Always
         ports:
         - containerPort: 8083
@@ -35,3 +35,8 @@ spec:
           value: "3500"
         - name: VIEWER_SOURCE_TOPIC_NAME
           value: "processed"
+        - name: TRACE_EXPORTER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: trace-config
+              key: exporter-url

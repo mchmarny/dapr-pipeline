@@ -1,15 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
 
+	"contrib.go.opencensus.io/exporter/zipkin"
 	"github.com/gin-gonic/gin"
 	"github.com/mchmarny/gcputil/env"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/trace"
+
+	openzipkin "github.com/openzipkin/zipkin-go"
+	zipkinHTTP "github.com/openzipkin/zipkin-go/reporter/http"
+)
+
+const (
+	traceExporterNotSet = "trace-not-set"
 )
 
 var (
@@ -23,12 +32,28 @@ var (
 
 	apiEndpoint = env.MustGetEnvVar("SENTIMENTER_API_ENDPOINT", "westus2.api.cognitive.microsoft.com")
 	apiToken    = env.MustGetEnvVar("CS_TOKEN", "")
+	exporterURL = env.MustGetEnvVar("TRACE_EXPORTER_URL", traceExporterNotSet)
 )
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
-	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
+	// START TRACING
+	if exporterURL != traceExporterNotSet {
+		hostname, _ := os.Hostname()
+		if hostname == "" {
+			hostname = "localhost"
+		}
+		endpointID := fmt.Sprintf("%s:%s", hostname, servicePort)
+		localEndpoint, err := openzipkin.NewEndpoint("sentimenter", endpointID)
+		if err != nil {
+			logger.Fatalf("error creating local endpoint: %v", err)
+		}
+		reporter := zipkinHTTP.NewReporter(exporterURL)
+		trace.RegisterExporter(zipkin.NewExporter(reporter, localEndpoint))
+		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
+	}
+	// END TRACING
 
 	// router
 	r := gin.New()

@@ -7,11 +7,19 @@ import (
 	"net/http"
 	"os"
 
+	"contrib.go.opencensus.io/exporter/zipkin"
 	"github.com/gin-gonic/gin"
 	"github.com/mchmarny/gcputil/env"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/trace"
 	"gopkg.in/olahol/melody.v1"
+
+	openzipkin "github.com/openzipkin/zipkin-go"
+	zipkinHTTP "github.com/openzipkin/zipkin-go/reporter/http"
+)
+
+const (
+	traceExporterNotSet = "trace-not-set"
 )
 
 var (
@@ -22,8 +30,8 @@ var (
 
 	// service
 	servicePort = env.MustGetEnvVar("PORT", "8083")
-
 	sourceTopic = env.MustGetEnvVar("VIEWER_SOURCE_TOPIC_NAME", "processed")
+	exporterURL = env.MustGetEnvVar("TRACE_EXPORTER_URL", traceExporterNotSet)
 
 	broadcaster *melody.Melody
 )
@@ -31,7 +39,22 @@ var (
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
-	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
+	// START TRACING
+	if exporterURL != traceExporterNotSet {
+		hostname, _ := os.Hostname()
+		if hostname == "" {
+			hostname = "localhost"
+		}
+		endpointID := fmt.Sprintf("%s:%s", hostname, servicePort)
+		localEndpoint, err := openzipkin.NewEndpoint("viewer", endpointID)
+		if err != nil {
+			logger.Fatalf("error creating local endpoint: %v", err)
+		}
+		reporter := zipkinHTTP.NewReporter(exporterURL)
+		trace.RegisterExporter(zipkin.NewExporter(reporter, localEndpoint))
+		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
+	}
+	// END TRACING
 
 	// router
 	r := gin.New()
