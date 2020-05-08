@@ -163,24 +163,18 @@ In addition, you can also observe Dapr metrics, logs, and traces for this demo.
 
 #### Metrics in Grafana dashboard 
 
+> Instructions on how to setup Grafana for Dapr are [here](https://github.com/dapr/docs/blob/master/howto/setup-monitoring-tools/setup-prometheus-grafana.md)
+
 Forward port
 
-```shell
-kubectl port-forward svc/grafana 8080:80 -n dapr-monitoring
-```
+http://localhost:8080/
 
 ![](../resource/image/metric.png)
 
 
 #### Logs in Kibana dashboard 
 
-Forward port 
-
-```shell
-kubectl port-forward svc/kibana-kibana 5601 -n dapr-monitoring
-```
-
-http://localhost:8080/
+> Instructions on how to setup Kibana for Dapr are [here](https://github.com/dapr/docs/blob/master/howto/setup-monitoring-tools/setup-fluentd-es-kibana.md)
 
 ![](../resource/image/log.png)
 
@@ -188,14 +182,11 @@ http://localhost:5601/
 
 #### Traces in Zipkin dashboard 
 
-Forward port 
-
-```shell
-kubectl port-forward svc/zipkin 9411:9411
-```
+> Instructions on how to setup Zipkin for Dapr are [here](https://github.com/dapr/docs/blob/master/howto/diagnose-with-tracing/zipkin.md)
 
 ![](../resource/image/trace.png)
 
+http://localhost:9411/zipkin/
 
 > Note, if your Zipkin isn't deployed in the `default` namespace you will have to edit the `exporterAddress` in [deployment/tracing/zipkin.yaml](deployment/tracing/zipkin.yaml)
 
@@ -205,8 +196,6 @@ Then just restart all the deployments
 ```shell
 kubectl rollout restart deployment processor provider viewer
 ```
-
-At this point you should be able to access the Zipkin UI (http://localhost:9411/zipkin/)
 
 
 
