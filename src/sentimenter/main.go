@@ -44,7 +44,7 @@ func main() {
 			hostname = "localhost"
 		}
 		endpointID := fmt.Sprintf("%s:%s", hostname, servicePort)
-		localEndpoint, err := openzipkin.NewEndpoint("processor", endpointID)
+		localEndpoint, err := openzipkin.NewEndpoint("sentimenter", endpointID)
 		if err != nil {
 			logger.Fatalf("error creating local endpoint: %v", err)
 		}

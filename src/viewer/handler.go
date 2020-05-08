@@ -79,7 +79,7 @@ func eventHandler(c *gin.Context) {
 	span.Annotate([]trace.Attribute{
 		trace.StringAttribute("version", eventVersion),
 		trace.StringAttribute("type", eventContentType),
-	}, "Processed event")
+	}, "Received event")
 
 	// logger.Printf("tweet: %s", string(e.Data()))
 

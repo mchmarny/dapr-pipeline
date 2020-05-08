@@ -47,7 +47,7 @@ func scoreHandler(c *gin.Context) {
 	span.Annotate([]trace.Attribute{
 		trace.StringAttribute("score", fmt.Sprintf("%f", score)),
 		trace.StringAttribute("text", r.Text),
-	}, "Processed sentiment")
+	}, "Scored sentiment")
 
 	c.JSON(http.StatusOK, &SimpleScore{
 		Score: score,
