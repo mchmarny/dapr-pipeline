@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 	"github.com/mchmarny/gcputil/env"
 
 	dapr "github.com/mchmarny/godapr"
+	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/trace"
 )
 
 var (
@@ -34,8 +37,9 @@ var (
 )
 
 func main() {
-
 	gin.SetMode(gin.ReleaseMode)
+
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 
 	daprClient = dapr.NewClient()
 
@@ -51,10 +55,9 @@ func main() {
 	// server
 	hostPort := net.JoinHostPort("0.0.0.0", servicePort)
 	logger.Printf("Server (%s) starting: %s \n", AppVersion, hostPort)
-	if err := r.Run(hostPort); err != nil {
-		logger.Fatal(err)
+	if err := http.ListenAndServe(hostPort, &ochttp.Handler{Handler: r}); err != nil {
+		logger.Fatalf("server error: %v", err)
 	}
-
 }
 
 // Options midleware
@@ -73,7 +76,7 @@ func Options(c *gin.Context) {
 
 // Client is the minim client support for testing
 type Client interface {
-	SaveState(store, key string, data interface{}) error
-	InvokeService(service, method string, data interface{}) (out []byte, err error)
-	Publish(topic string, data interface{}) error
+	SaveState(ctx context.Context, store, key string, data interface{}) error
+	InvokeService(ctx context.Context, service, method string, data interface{}) (out []byte, err error)
+	Publish(ctx context.Context, topic string, data interface{}) error
 }

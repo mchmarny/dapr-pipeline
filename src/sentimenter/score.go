@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,7 +10,9 @@ import (
 	"net/http/httputil"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"go.opencensus.io/plugin/ochttp"
 )
 
 const (
@@ -40,7 +43,7 @@ type Response struct {
 	Docs []*ResponseItem `json:"documents"`
 }
 
-func scoreSentiment(txt, lang string) (sentiment float64, err error) {
+func scoreSentiment(ctx context.Context, txt, lang string) (sentiment float64, err error) {
 	if txt == "" {
 		return 0, errors.New("nil txt")
 	}
@@ -66,9 +69,17 @@ func scoreSentiment(txt, lang string) (sentiment float64, err error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Ocp-Apim-Subscription-Key", apiToken)
 
+	octr := &ochttp.Transport{}
 	c := &http.Client{
-		Timeout: 60 * time.Second,
+		Timeout:   60 * time.Second,
+		Transport: octr,
 	}
+
+	opentracing.GlobalTracer().Inject(
+		span.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header))
+
 	resp, err := c.Do(req)
 	if err != nil {
 		return 0, errors.Wrapf(err, "error posting %+v to %s", data, url)

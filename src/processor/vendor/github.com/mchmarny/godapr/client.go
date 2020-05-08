@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,7 +12,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"go.opencensus.io/plugin/ochttp"
 )
 
 var (
@@ -61,7 +64,10 @@ type Client struct {
 
 // GetStateWithOptions gets content for specific key in state store
 // TODO: implement with StateOptions
-func (c *Client) GetStateWithOptions(store, key string, opt *StateOptions) (data []byte, err error) {
+func (c *Client) GetStateWithOptions(ctx context.Context, store, key string, opt *StateOptions) (data []byte, err error) {
+	span := opentracing.SpanFromContext(ctx)
+	defer span.Finish()
+
 	url := fmt.Sprintf("%s/v1.0/state/%s/%s", c.BaseURL, store, key)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -76,7 +82,10 @@ func (c *Client) GetStateWithOptions(store, key string, opt *StateOptions) (data
 		req.Header.Set("consistency", opt.Consistency)
 	}
 
-	//TODO: Handle RetryPolicy
+	opentracing.GlobalTracer().Inject(
+		span.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header))
 
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
@@ -103,22 +112,23 @@ func (c *Client) GetStateWithOptions(store, key string, opt *StateOptions) (data
 	}
 
 	return content, nil
+
 }
 
 // GetState gets content for specific key in state store
-func (c *Client) GetState(store, key string) (data []byte, err error) {
-	return c.GetStateWithOptions(store, key, nil)
+func (c *Client) GetState(ctx context.Context, store, key string) (data []byte, err error) {
+	return c.GetStateWithOptions(ctx, store, key, nil)
 }
 
 // SaveStateData saves state data into state store
-func (c *Client) SaveStateData(store string, data *StateData) error {
+func (c *Client) SaveStateData(ctx context.Context, store string, data *StateData) error {
 	list := []*StateData{data}
 	url := fmt.Sprintf("%s/v1.0/state/%s", c.BaseURL, store)
-	return c.post(url, list)
+	return c.post(ctx, url, list)
 }
 
 // SaveState saves data into state store for specific key
-func (c *Client) SaveState(store, key string, data interface{}) error {
+func (c *Client) SaveState(ctx context.Context, store, key string, data interface{}) error {
 	state := &StateData{
 		Key:   key,
 		Value: data,
@@ -130,27 +140,33 @@ func (c *Client) SaveState(store, key string, data interface{}) error {
 			"created_on": time.Now().UTC().String(),
 		},
 	}
-	return c.SaveStateData(store, state)
+	return c.SaveStateData(ctx, store, state)
 }
 
 // Publish serializes data to JSON and publishes it onto specified topic
-func (c *Client) Publish(topic string, data interface{}) error {
+func (c *Client) Publish(ctx context.Context, topic string, data interface{}) error {
 	url := fmt.Sprintf("%s/v1.0/publish/%s", c.BaseURL, topic)
-	return c.post(url, data)
+	return c.post(ctx, url, data)
 }
 
-// Bind serializes data to JSON and submits to specific binding
-func (c *Client) Bind(binding string, data interface{}) error {
+// InvokeBinding serializes data to JSON and submits to specific binding
+func (c *Client) InvokeBinding(ctx context.Context, binding string, data interface{}) error {
 	url := fmt.Sprintf("%s/v1.0/bindings/%s", c.BaseURL, binding)
-	return c.post(url, data)
+	return c.post(ctx, url, data)
 }
 
 // InvokeService serializes input data to JSON and invokes the remote service method
-func (c *Client) InvokeService(service, method string, in interface{}) (out []byte, err error) {
+func (c *Client) InvokeService(ctx context.Context, service, method string, in interface{}) (out []byte, err error) {
+	span := opentracing.SpanFromContext(ctx)
+	defer span.Finish()
 	url := fmt.Sprintf("%s/v1.0/invoke/%s/method/%s", c.BaseURL, service, method)
 	b, _ := json.Marshal(in)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
+	opentracing.GlobalTracer().Inject(
+		span.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header))
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error invoking service: %s", url)
@@ -169,11 +185,16 @@ func (c *Client) InvokeService(service, method string, in interface{}) (out []by
 	return content, nil
 }
 
-func (c *Client) post(url string, data interface{}) error {
+func (c *Client) post(ctx context.Context, url string, data interface{}) error {
+	span := opentracing.SpanFromContext(ctx)
+	defer span.Finish()
 	b, _ := json.Marshal(data)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
-
+	opentracing.GlobalTracer().Inject(
+		span.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header))
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
 		return errors.Wrapf(err, "error posting %+v to %s", data, url)
@@ -187,12 +208,14 @@ func (c *Client) post(url string, data interface{}) error {
 		return fmt.Errorf("invalid response code from POST to %s with result: %+v - %q",
 			url, data, dump)
 	}
-
 	return nil
 }
 
 func (c *Client) newHTTPClient() *http.Client {
+	octr := &ochttp.Transport{}
+
 	return &http.Client{
-		Timeout: c.HTTPTimeout,
+		Timeout:   c.HTTPTimeout,
+		Transport: octr,
 	}
 }

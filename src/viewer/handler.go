@@ -38,7 +38,6 @@ func rootHandler(c *gin.Context) {
 }
 
 func eventHandler(c *gin.Context) {
-
 	e := ce.NewEvent()
 	if err := c.ShouldBindJSON(&e); err != nil {
 		logger.Printf("error binding event: %v", err)

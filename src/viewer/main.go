@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mchmarny/gcputil/env"
+	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/trace"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -27,8 +29,9 @@ var (
 )
 
 func main() {
-
 	gin.SetMode(gin.ReleaseMode)
+
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 
 	// router
 	r := gin.New()
@@ -61,10 +64,9 @@ func main() {
 	// server
 	hostPort := net.JoinHostPort("0.0.0.0", servicePort)
 	logger.Printf("Server (%s) starting: %s \n", AppVersion, hostPort)
-	if err := r.Run(hostPort); err != nil {
+	if err := http.ListenAndServe(hostPort, &ochttp.Handler{Handler: r}); err != nil {
 		logger.Fatal(err)
 	}
-
 }
 
 // Options midleware

@@ -28,7 +28,7 @@ func scoreHandler(c *gin.Context) {
 	logger.Printf("received scoring request: %v", r)
 
 	// score the content sentiment
-	score, err := scoreSentiment(r.Text, r.Lang)
+	score, err := scoreSentiment(c.Request.Context(), r.Text, r.Lang)
 	if err != nil {
 		logger.Printf("error scoring sentiment: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{

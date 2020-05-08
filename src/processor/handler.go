@@ -27,18 +27,18 @@ func defaultHandler(c *gin.Context) {
 }
 
 func tweetHandler(c *gin.Context) {
-
 	var t twitter.Tweet
 	if err := c.ShouldBindJSON(&t); err != nil {
 		logger.Printf("error binding tweet: %v", err)
 		c.JSON(http.StatusBadRequest, clientError)
 		return
 	}
-
 	logger.Printf("tweet: %s", t.IDStr)
 
+	ctx := c.Request.Context()
+
 	// save original tweet in case we need to reprocess it
-	err := daprClient.SaveState(stateStore, t.IDStr, t)
+	err := daprClient.SaveState(ctx, stateStore, t.IDStr, t)
 	if err != nil {
 		logger.Printf("error saving state: %v", err)
 		c.JSON(http.StatusInternalServerError, clientError)
@@ -59,7 +59,7 @@ func tweetHandler(c *gin.Context) {
 	}
 
 	// score simple tweet
-	b, err := daprClient.InvokeService(scoreService, scoreMethod, sentimentReq)
+	b, err := daprClient.InvokeService(ctx, scoreService, scoreMethod, sentimentReq)
 	if err != nil {
 		logger.Printf("error invoking scoring service (%s/%s): %v",
 			scoreService, scoreMethod, err)
@@ -88,7 +88,7 @@ func tweetHandler(c *gin.Context) {
 	}
 
 	// publish simple tweet
-	if err = daprClient.Publish(eventTopic, s); err != nil {
+	if err = daprClient.Publish(ctx, eventTopic, s); err != nil {
 		logger.Printf("error publishing content (%+v): %v", s, err)
 		c.JSON(http.StatusInternalServerError, clientError)
 		return

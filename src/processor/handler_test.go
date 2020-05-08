@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -44,14 +45,14 @@ var (
 type TestClient struct {
 }
 
-func (c *TestClient) SaveState(store, key string, data interface{}) error {
+func (c *TestClient) SaveState(ctx context.Context, store, key string, data interface{}) error {
 	return nil
 }
 
-func (c *TestClient) InvokeService(service, method string, data interface{}) (out []byte, err error) {
+func (c *TestClient) InvokeService(ctx context.Context, service, method string, data interface{}) (out []byte, err error) {
 	return []byte("{\"score\": 0.1234556789}"), nil
 }
 
-func (c *TestClient) Publish(topic string, data interface{}) error {
+func (c *TestClient) Publish(ctx context.Context, topic string, data interface{}) error {
 	return nil
 }
