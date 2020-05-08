@@ -1,11 +1,13 @@
 # Kubernetes Deployment
 
-This document will overview the `dapr-pipeline` demo deployment into Kubernetes. For illustration purposes, all commands in this document will be based on Microsoft Azure. Dapr supports a wide array of state and pubsub backing services across multiple Cloud and on-prem deployments, so if you already have a Kubernates cluster somewhere else, you can substitute:
+This document will overview the `dapr-pipeline` demo deployment into Kubernetes. For illustration purposes, all commands in this document will be based on Microsoft Azure. 
+
+![alt text](../resource/image/overview-k8s.png "Kubernetes Pipeline Overview")
+
+Dapr supports a wide array of state and pubsub backing services across multiple Cloud and on-prem deployments, so if you already have a Kubernates cluster somewhere else, you can substitute:
 
 * [state backing service options](https://github.com/dapr/docs/tree/master/howto/setup-state-store)
 * [pubsub backing service options](https://github.com/dapr/docs/tree/master/howto/setup-pub-sub-message-broker) 
-
-![alt text](../resource/image/overview-k8s.png "Kubernetes Pipeline Overview")
 
 ## Prerequisite
 
