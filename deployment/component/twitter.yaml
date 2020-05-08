@@ -23,3 +23,5 @@ spec:
       key: consumer-secret
   - name: query
     value: "microsoft" # need more tweets during dev ;) 
+scopes:
+  - processor

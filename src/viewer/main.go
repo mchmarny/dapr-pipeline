@@ -17,6 +17,7 @@ import (
 
 	openzipkin "github.com/openzipkin/zipkin-go"
 	zipkinHTTP "github.com/openzipkin/zipkin-go/reporter/http"
+	"go.opencensus.io/stats/view"
 )
 
 const (
@@ -38,22 +39,20 @@ var (
 )
 
 func main() {
-	// START TRACING
+	// START TRACING & METRICS
 	if exporterURL != traceExporterNotSet {
+		view.Register(ochttp.DefaultClientViews...)
 		hostname, _ := os.Hostname()
 		if hostname == "" {
 			hostname = "localhost"
 		}
 		endpointID := fmt.Sprintf("%s:%s", hostname, servicePort)
-		localEndpoint, err := openzipkin.NewEndpoint("viewer", endpointID)
-		if err != nil {
-			logger.Fatalf("error creating local endpoint: %v", err)
-		}
+		localEndpoint, _ := openzipkin.NewEndpoint("viewer", endpointID)
 		reporter := zipkinHTTP.NewReporter(exporterURL)
 		trace.RegisterExporter(zipkin.NewExporter(reporter, localEndpoint))
 		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 	}
-	// END TRACING
+	// END TRACING & METRICS
 
 	gin.SetMode(gin.ReleaseMode)
 

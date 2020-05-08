@@ -14,10 +14,12 @@ import (
 	dapr "github.com/mchmarny/godapr"
 
 	"contrib.go.opencensus.io/exporter/zipkin"
+	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/trace"
 
 	openzipkin "github.com/openzipkin/zipkin-go"
 	zipkinHTTP "github.com/openzipkin/zipkin-go/reporter/http"
+	"go.opencensus.io/stats/view"
 )
 
 const (
@@ -48,22 +50,20 @@ var (
 
 func main() {
 
-	// START TRACING
+	// START TRACING & METRICS
 	if exporterURL != traceExporterNotSet {
+		view.Register(ochttp.DefaultClientViews...)
 		hostname, _ := os.Hostname()
 		if hostname == "" {
 			hostname = "localhost"
 		}
 		endpointID := fmt.Sprintf("%s:%s", hostname, servicePort)
-		localEndpoint, err := openzipkin.NewEndpoint("processor", endpointID)
-		if err != nil {
-			logger.Fatalf("error creating local endpoint: %v", err)
-		}
+		localEndpoint, _ := openzipkin.NewEndpoint("processor", endpointID)
 		reporter := zipkinHTTP.NewReporter(exporterURL)
 		trace.RegisterExporter(zipkin.NewExporter(reporter, localEndpoint))
 		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 	}
-	// END TRACING
+	// END TRACING & METRICS
 
 	gin.SetMode(gin.ReleaseMode)
 
@@ -81,7 +81,7 @@ func main() {
 	// server
 	hostPort := net.JoinHostPort("0.0.0.0", servicePort)
 	logger.Printf("Server (%s) starting: %s \n", AppVersion, hostPort)
-	if err := http.ListenAndServe(hostPort, r); err != nil {
+	if err := http.ListenAndServe(hostPort, &ochttp.Handler{Handler: r}); err != nil {
 		logger.Fatalf("server error: %v", err)
 	}
 }
