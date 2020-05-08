@@ -6,8 +6,7 @@ import (
 
 	ce "github.com/cloudevents/sdk-go/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
+	"go.opencensus.io/trace"
 )
 
 const (
@@ -40,15 +39,9 @@ func rootHandler(c *gin.Context) {
 }
 
 func eventHandler(c *gin.Context) {
-	// START TRACING
-	wrCtx, _ := opentracing.GlobalTracer().Extract(
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(c.Request.Header))
-	span := opentracing.StartSpan(
-		"viewer-handler",
-		ext.RPCServerOption(wrCtx))
-	defer span.Finish()
-	// END TRACING
+	_, span := trace.StartSpan(c.Request.Context(), "viewer-handler")
+	defer span.End()
+
 	e := ce.NewEvent()
 	if err := c.ShouldBindJSON(&e); err != nil {
 		logger.Printf("error binding event: %v", err)
@@ -83,8 +76,10 @@ func eventHandler(c *gin.Context) {
 		return
 	}
 
-	span.SetTag("event-version", eventVersion)
-	span.SetTag("event-type", eventContentType)
+	span.Annotate([]trace.Attribute{
+		trace.StringAttribute("version", eventVersion),
+		trace.StringAttribute("type", eventContentType),
+	}, "Processed event")
 
 	// logger.Printf("tweet: %s", string(e.Data()))
 

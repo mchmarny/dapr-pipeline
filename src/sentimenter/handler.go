@@ -1,12 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
+	"go.opencensus.io/trace"
 )
 
 func defaultHandler(c *gin.Context) {
@@ -18,16 +18,8 @@ func defaultHandler(c *gin.Context) {
 }
 
 func scoreHandler(c *gin.Context) {
-	// START TRACING
-	wrCtx, _ := opentracing.GlobalTracer().Extract(
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(c.Request.Header))
-	span := opentracing.StartSpan(
-		"sentimenter-handler",
-		ext.RPCServerOption(wrCtx))
-	defer span.Finish()
-	ctx := opentracing.ContextWithSpan(c.Request.Context(), span)
-	// END TRACING
+	ctx, span := trace.StartSpan(c.Request.Context(), "sentimenter-handler")
+	defer span.End()
 
 	r := ScoreRequest{}
 	if err := c.ShouldBindJSON(&r); err != nil || r.Text == "" {
@@ -51,8 +43,11 @@ func scoreHandler(c *gin.Context) {
 		return
 	}
 	logger.Printf("result: %f - %s", score, r.Text)
-	span.SetTag("tweet-score", score)
-	span.SetTag("tweet-text", r.Text)
+
+	span.Annotate([]trace.Attribute{
+		trace.StringAttribute("score", fmt.Sprintf("%f", score)),
+		trace.StringAttribute("text", r.Text),
+	}, "Processed sentiment")
 
 	c.JSON(http.StatusOK, &SimpleScore{
 		Score: score,

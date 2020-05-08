@@ -6,11 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
-
 	"github.com/dghubble/go-twitter/twitter"
+	"github.com/gin-gonic/gin"
+
+	"go.opencensus.io/trace"
 )
 
 var (
@@ -29,21 +28,16 @@ func defaultHandler(c *gin.Context) {
 }
 
 func tweetHandler(c *gin.Context) {
-	// START TRACING
-	wrCtx, _ := opentracing.GlobalTracer().Extract(
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(c.Request.Header))
-	span := opentracing.StartSpan(
-		"processor-handler",
-		ext.RPCServerOption(wrCtx))
-	defer span.Finish()
-	ctx := opentracing.ContextWithSpan(c.Request.Context(), span)
-	// END TRACING
+	ctx, span := trace.StartSpan(c.Request.Context(), "processor-handler")
+	defer span.End()
 
 	var t twitter.Tweet
 	if err := c.ShouldBindJSON(&t); err != nil {
 		logger.Printf("error binding tweet: %v", err)
-		span.SetTag("error", string(ext.Error))
+		span.SetStatus(trace.Status{
+			Code:    trace.StatusCodeUnknown,
+			Message: err.Error(),
+		})
 		c.JSON(http.StatusBadRequest, clientError)
 		return
 	}
@@ -53,7 +47,10 @@ func tweetHandler(c *gin.Context) {
 	err := daprClient.SaveState(ctx, stateStore, t.IDStr, t)
 	if err != nil {
 		logger.Printf("error saving state: %v", err)
-		span.SetTag("error", string(ext.Error))
+		span.SetStatus(trace.Status{
+			Code:    trace.StatusCodeUnknown,
+			Message: err.Error(),
+		})
 		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
@@ -76,7 +73,10 @@ func tweetHandler(c *gin.Context) {
 	if err != nil {
 		logger.Printf("error invoking scoring service (%s/%s): %v",
 			scoreService, scoreMethod, err)
-		span.SetTag("error", string(ext.Error))
+		span.SetStatus(trace.Status{
+			Code:    trace.StatusCodeUnknown,
+			Message: err.Error(),
+		})
 		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
@@ -87,7 +87,10 @@ func tweetHandler(c *gin.Context) {
 
 	if err := json.Unmarshal(b, &sentimentRes); err != nil {
 		logger.Printf("error parsing scoring service response (%s): %v", string(b), err)
-		span.SetTag("error", string(ext.Error))
+		span.SetStatus(trace.Status{
+			Code:    trace.StatusCodeUnknown,
+			Message: err.Error(),
+		})
 		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
@@ -102,16 +105,18 @@ func tweetHandler(c *gin.Context) {
 		Score:     sentimentRes.Score,
 	}
 
-	span.SetTag("tweet-id", s.ID)
-	span.SetTag("sentiment-score", s.Score)
-
 	// publish simple tweet
 	if err = daprClient.Publish(ctx, eventTopic, s); err != nil {
 		logger.Printf("error publishing content (%+v): %v", s, err)
-		span.SetTag("error", string(ext.Error))
+		span.SetStatus(trace.Status{
+			Code:    trace.StatusCodeUnknown,
+			Message: err.Error(),
+		})
 		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
+
+	span.Annotate([]trace.Attribute{trace.StringAttribute("id", s.ID)}, "Processed tweet")
 
 	c.JSON(http.StatusOK, gin.H{})
 }

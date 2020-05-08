@@ -64,11 +64,6 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 ## explicit
 github.com/modern-go/reflect2
-# github.com/opentracing/opentracing-go v1.1.0
-## explicit
-github.com/opentracing/opentracing-go
-github.com/opentracing/opentracing-go/ext
-github.com/opentracing/opentracing-go/log
 # github.com/openzipkin/zipkin-go v0.1.6
 ## explicit
 github.com/openzipkin/zipkin-go

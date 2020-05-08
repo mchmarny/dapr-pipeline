@@ -8,11 +8,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
-	"time"
 
-	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/trace"
 )
 
 const (
@@ -44,6 +43,8 @@ type Response struct {
 }
 
 func scoreSentiment(ctx context.Context, txt, lang string) (sentiment float64, err error) {
+	ctx, span := trace.StartSpan(ctx, "sentimenter-scorer")
+	defer span.End()
 	if txt == "" {
 		return 0, errors.New("nil txt")
 	}
@@ -68,20 +69,9 @@ func scoreSentiment(ctx context.Context, txt, lang string) (sentiment float64, e
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Ocp-Apim-Subscription-Key", apiToken)
+	req = req.WithContext(ctx)
 
-	octr := &ochttp.Transport{}
-	c := &http.Client{
-		Timeout:   60 * time.Second,
-		Transport: octr,
-	}
-
-	span := opentracing.SpanFromContext(ctx)
-	defer span.Finish()
-
-	opentracing.GlobalTracer().Inject(
-		span.Context(),
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(req.Header))
+	c := &http.Client{Transport: &ochttp.Transport{}}
 
 	resp, err := c.Do(req)
 	if err != nil {

@@ -8,11 +8,12 @@ import (
 	"net/http"
 	"os"
 
-	"contrib.go.opencensus.io/exporter/zipkin"
 	"github.com/gin-gonic/gin"
 	"github.com/mchmarny/gcputil/env"
 
 	dapr "github.com/mchmarny/godapr"
+
+	"contrib.go.opencensus.io/exporter/zipkin"
 	"go.opencensus.io/trace"
 
 	openzipkin "github.com/openzipkin/zipkin-go"
@@ -46,7 +47,6 @@ var (
 )
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
 
 	// START TRACING
 	if exporterURL != traceExporterNotSet {
@@ -64,6 +64,8 @@ func main() {
 		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 	}
 	// END TRACING
+
+	gin.SetMode(gin.ReleaseMode)
 
 	daprClient = dapr.NewClient()
 

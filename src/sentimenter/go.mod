@@ -9,7 +9,7 @@ require (
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mchmarny/gcputil v0.3.3
 	github.com/opentracing/opentracing-go v1.1.0
-	github.com/openzipkin/zipkin-go v0.2.2
+	github.com/openzipkin/zipkin-go v0.1.6
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.5.1
 	go.opencensus.io v0.22.3

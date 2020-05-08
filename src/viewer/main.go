@@ -7,12 +7,13 @@ import (
 	"net/http"
 	"os"
 
-	"contrib.go.opencensus.io/exporter/zipkin"
 	"github.com/gin-gonic/gin"
 	"github.com/mchmarny/gcputil/env"
+	"gopkg.in/olahol/melody.v1"
+
+	"contrib.go.opencensus.io/exporter/zipkin"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/trace"
-	"gopkg.in/olahol/melody.v1"
 
 	openzipkin "github.com/openzipkin/zipkin-go"
 	zipkinHTTP "github.com/openzipkin/zipkin-go/reporter/http"
@@ -37,8 +38,6 @@ var (
 )
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
-
 	// START TRACING
 	if exporterURL != traceExporterNotSet {
 		hostname, _ := os.Hostname()
@@ -46,7 +45,7 @@ func main() {
 			hostname = "localhost"
 		}
 		endpointID := fmt.Sprintf("%s:%s", hostname, servicePort)
-		localEndpoint, err := openzipkin.NewEndpoint("viewer", endpointID)
+		localEndpoint, err := openzipkin.NewEndpoint("processor", endpointID)
 		if err != nil {
 			logger.Fatalf("error creating local endpoint: %v", err)
 		}
@@ -55,6 +54,8 @@ func main() {
 		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 	}
 	// END TRACING
+
+	gin.SetMode(gin.ReleaseMode)
 
 	// router
 	r := gin.New()

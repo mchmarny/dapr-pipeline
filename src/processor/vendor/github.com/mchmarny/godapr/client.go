@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
-	"go.opencensus.io/plugin/ochttp"
 )
 
 var (
@@ -67,7 +67,8 @@ type Client struct {
 func (c *Client) GetStateWithOptions(ctx context.Context, store, key string, opt *StateOptions) (data []byte, err error) {
 	span := opentracing.SpanFromContext(ctx)
 	defer span.Finish()
-
+	span.SetTag("state-store", store)
+	span.SetTag("state-key", key)
 	url := fmt.Sprintf("%s/v1.0/state/%s/%s", c.BaseURL, store, key)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set("Content-Type", "application/json")
@@ -86,9 +87,9 @@ func (c *Client) GetStateWithOptions(ctx context.Context, store, key string, opt
 		span.Context(),
 		opentracing.HTTPHeaders,
 		opentracing.HTTPHeadersCarrier(req.Header))
-
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
+		span.SetTag("error", string(ext.Error))
 		return nil, errors.Wrapf(err, "error quering state service: %s", url)
 	}
 	defer resp.Body.Close()
@@ -103,11 +104,13 @@ func (c *Client) GetStateWithOptions(ctx context.Context, store, key string, opt
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		span.SetTag("error", string(ext.Error))
 		return nil, fmt.Errorf("invalid response code from GET to %s: %d", url, resp.StatusCode)
 	}
 
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		span.SetTag("error", string(ext.Error))
 		return nil, errors.Wrapf(err, "error reading response from GET to %s", url)
 	}
 
@@ -124,7 +127,7 @@ func (c *Client) GetState(ctx context.Context, store, key string) (data []byte, 
 func (c *Client) SaveStateData(ctx context.Context, store string, data *StateData) error {
 	list := []*StateData{data}
 	url := fmt.Sprintf("%s/v1.0/state/%s", c.BaseURL, store)
-	return c.post(ctx, url, list)
+	return c.post(ctx, "save-state", url, list)
 }
 
 // SaveState saves data into state store for specific key
@@ -146,19 +149,21 @@ func (c *Client) SaveState(ctx context.Context, store, key string, data interfac
 // Publish serializes data to JSON and publishes it onto specified topic
 func (c *Client) Publish(ctx context.Context, topic string, data interface{}) error {
 	url := fmt.Sprintf("%s/v1.0/publish/%s", c.BaseURL, topic)
-	return c.post(ctx, url, data)
+	return c.post(ctx, "publish-to-topic", url, data)
 }
 
 // InvokeBinding serializes data to JSON and submits to specific binding
 func (c *Client) InvokeBinding(ctx context.Context, binding string, data interface{}) error {
 	url := fmt.Sprintf("%s/v1.0/bindings/%s", c.BaseURL, binding)
-	return c.post(ctx, url, data)
+	return c.post(ctx, "invoke-service", url, data)
 }
 
 // InvokeService serializes input data to JSON and invokes the remote service method
 func (c *Client) InvokeService(ctx context.Context, service, method string, in interface{}) (out []byte, err error) {
 	span := opentracing.SpanFromContext(ctx)
 	defer span.Finish()
+	span.SetTag("invoke-service", service)
+	span.SetTag("invoke-method", method)
 	url := fmt.Sprintf("%s/v1.0/invoke/%s/method/%s", c.BaseURL, service, method)
 	b, _ := json.Marshal(in)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
@@ -169,25 +174,29 @@ func (c *Client) InvokeService(ctx context.Context, service, method string, in i
 		opentracing.HTTPHeadersCarrier(req.Header))
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
+		span.SetTag("error", string(ext.Error))
 		return nil, errors.Wrapf(err, "error invoking service: %s", url)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		span.SetTag("error", string(ext.Error))
 		return nil, fmt.Errorf("invalid response code from GET to %s: %d", url, resp.StatusCode)
 	}
 
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		span.SetTag("error", string(ext.Error))
 		return nil, errors.Wrapf(err, "error reading response from invoke to %s", url)
 	}
 
 	return content, nil
 }
 
-func (c *Client) post(ctx context.Context, url string, data interface{}) error {
+func (c *Client) post(ctx context.Context, method, url string, data interface{}) error {
 	span := opentracing.SpanFromContext(ctx)
 	defer span.Finish()
+
 	b, _ := json.Marshal(data)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
@@ -197,6 +206,7 @@ func (c *Client) post(ctx context.Context, url string, data interface{}) error {
 		opentracing.HTTPHeadersCarrier(req.Header))
 	resp, err := c.newHTTPClient().Do(req)
 	if err != nil {
+		span.SetTag("error", string(ext.Error))
 		return errors.Wrapf(err, "error posting %+v to %s", data, url)
 	}
 	defer resp.Body.Close()
@@ -205,6 +215,7 @@ func (c *Client) post(ctx context.Context, url string, data interface{}) error {
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		dump, _ := httputil.DumpResponse(resp, true)
+		span.SetTag("error", string(ext.Error))
 		return fmt.Errorf("invalid response code from POST to %s with result: %+v - %q",
 			url, data, dump)
 	}
@@ -212,10 +223,7 @@ func (c *Client) post(ctx context.Context, url string, data interface{}) error {
 }
 
 func (c *Client) newHTTPClient() *http.Client {
-	octr := &ochttp.Transport{}
-
 	return &http.Client{
-		Timeout:   c.HTTPTimeout,
-		Transport: octr,
+		Timeout: c.HTTPTimeout,
 	}
 }
