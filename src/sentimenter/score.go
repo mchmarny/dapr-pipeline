@@ -75,8 +75,11 @@ func scoreSentiment(ctx context.Context, txt, lang string) (sentiment float64, e
 		Transport: octr,
 	}
 
+	sp := opentracing.StartSpan("sentiment-api-call", opentracing.ChildOf(ctx))
+	defer sp.Finish()
+
 	opentracing.GlobalTracer().Inject(
-		span.Context(),
+		sp.Context(),
 		opentracing.HTTPHeaders,
 		opentracing.HTTPHeadersCarrier(req.Header))
 
