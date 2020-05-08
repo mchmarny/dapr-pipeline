@@ -5,4 +5,4 @@ metadata:
   namespace: default
 spec:
   tracing:
-    samplingRate: "10"
+    samplingRate: "1"

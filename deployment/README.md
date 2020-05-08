@@ -1,9 +1,11 @@
 # Kubernetes Deployment
 
-This document will overview the `dapr-pipeline` demo deployment into Kubernetes. For illustration purposes, all commands in this document will be based on Microsoft Azure. dapr supports a wide array of state and pubsub backing services across multiple Cloud and on-prem deployments, so if you already have a Kubernates cluster soemwhere else, you can substitute:
+This document will overview the `dapr-pipeline` demo deployment into Kubernetes. For illustration purposes, all commands in this document will be based on Microsoft Azure. Dapr supports a wide array of state and pubsub backing services across multiple Cloud and on-prem deployments, so if you already have a Kubernates cluster somewhere else, you can substitute:
 
 * [state backing service options](https://github.com/dapr/docs/tree/master/howto/setup-state-store)
 * [pubsub backing service options](https://github.com/dapr/docs/tree/master/howto/setup-pub-sub-message-broker) 
+
+![alt text](../resource/image/overview-k8s.png "Kubernetes Pipeline Overview")
 
 ## Prerequisite
 
@@ -102,9 +104,7 @@ kubectl create secret generic demo-sentimenter-secret \
 And now you can deploy the entire pipeline (`provider`, `processor`, `viewer`) with a single command:
 
 ```shell
-kubectl apply -f sentimenter.yaml \
-              -f viewer.yaml \
-              -f processor.yaml
+kubectl apply -f sentimenter.yaml -f viewer.yaml -f processor.yaml
 ```
 
 You can check on the status of your deployment like this: 
@@ -140,3 +140,42 @@ open "http://${VIEWER_IP}/"
 ```
 
 > To change the Twitter topic query, first edit the [deployment/component/twitter.yaml](deployment/component/twitter.yaml), then apply it (`kubectl apply -f component/twitter.yaml`), and finally, restart the processor (`kubectl rollout restart deployment processor`) to ensure the new configuration is applied. 
+
+
+#### Observability 
+
+You can view the scored tweets in Azure table storage 
+
+![](../resource/image/state.png)
+
+Similarly you can monitor the pubsub topic throughout in Azure Service Bus 
+
+![](../resource/image/pubsub.png)
+
+In addition to the state and pubsub, you can also observe Dapr metrics and logs for this demo. 
+
+The Dapr sidecar Grafana dashboard 
+
+![](../resource/image/metric.png)
+
+And the Elastic backed Kibana dashboard for logs
+
+![](../resource/image/log.png)
+
+If you have Zipkin installed on the cluster, you can enable tracing by applying the tracing config and Zipkin exporter
+
+> Note, if your Zipkin isn't deployed in the `default` namespace you will have to edit the `exporterAddress` in [deployment/tracing/zipkin.yaml](deployment/tracing/zipkin.yaml)
+
+Then just restart all the deployments 
+
+```shell
+kubectl rollout restart deployment processor provider viewer
+```
+
+At this point you should be able to access the Zipkin UI (http://localhost:9411/zipkin/)
+
+![](../resource/image/trace.png)
+
+
+
+
