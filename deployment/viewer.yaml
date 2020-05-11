@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: user-container
-        image: mchmarny/viewer:v0.6.3
+        image: mchmarny/viewer:v0.7.1
         imagePullPolicy: Always
         ports:
         - containerPort: 8083

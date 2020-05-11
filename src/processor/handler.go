@@ -34,6 +34,7 @@ func tweetHandler(c *gin.Context) {
 	if !ok {
 		ctx = trace.SpanContext{}
 	}
+
 	var t twitter.Tweet
 	if err := c.ShouldBindJSON(&t); err != nil {
 		logger.Printf("error binding tweet: %v", err)

@@ -194,7 +194,7 @@ http://localhost:9411/zipkin/
 Then just restart all the deployments 
 
 ```shell
-kubectl rollout restart deployment processor provider viewer
+kubectl rollout restart deployment processor sentimenter  viewer
 ```
 
 
