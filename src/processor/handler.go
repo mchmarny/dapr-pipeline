@@ -9,6 +9,7 @@ import (
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/gin-gonic/gin"
 
+	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/trace"
 )
 
@@ -28,16 +29,14 @@ func defaultHandler(c *gin.Context) {
 }
 
 func tweetHandler(c *gin.Context) {
-	ctx, span := trace.StartSpan(c.Request.Context(), "processor-handler")
-	defer span.End()
-
+	httpFmt := tracecontext.HTTPFormat{}
+	ctx, ok := httpFmt.SpanContextFromRequest(c.Request)
+	if !ok {
+		ctx = trace.SpanContext{}
+	}
 	var t twitter.Tweet
 	if err := c.ShouldBindJSON(&t); err != nil {
 		logger.Printf("error binding tweet: %v", err)
-		span.SetStatus(trace.Status{
-			Code:    trace.StatusCodeUnknown,
-			Message: err.Error(),
-		})
 		c.JSON(http.StatusBadRequest, clientError)
 		return
 	}
@@ -47,10 +46,6 @@ func tweetHandler(c *gin.Context) {
 	err := daprClient.SaveState(ctx, stateStore, t.IDStr, t)
 	if err != nil {
 		logger.Printf("error saving state: %v", err)
-		span.SetStatus(trace.Status{
-			Code:    trace.StatusCodeUnknown,
-			Message: err.Error(),
-		})
 		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
@@ -73,10 +68,6 @@ func tweetHandler(c *gin.Context) {
 	if err != nil {
 		logger.Printf("error invoking scoring service (%s/%s): %v",
 			scoreService, scoreMethod, err)
-		span.SetStatus(trace.Status{
-			Code:    trace.StatusCodeUnknown,
-			Message: err.Error(),
-		})
 		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
@@ -87,10 +78,6 @@ func tweetHandler(c *gin.Context) {
 
 	if err := json.Unmarshal(b, &sentimentRes); err != nil {
 		logger.Printf("error parsing scoring service response (%s): %v", string(b), err)
-		span.SetStatus(trace.Status{
-			Code:    trace.StatusCodeUnknown,
-			Message: err.Error(),
-		})
 		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
@@ -108,15 +95,9 @@ func tweetHandler(c *gin.Context) {
 	// publish simple tweet
 	if err = daprClient.Publish(ctx, eventTopic, s); err != nil {
 		logger.Printf("error publishing content (%+v): %v", s, err)
-		span.SetStatus(trace.Status{
-			Code:    trace.StatusCodeUnknown,
-			Message: err.Error(),
-		})
 		c.JSON(http.StatusInternalServerError, clientError)
 		return
 	}
-
-	span.Annotate([]trace.Attribute{trace.StringAttribute("id", s.ID)}, "Processed tweet")
 
 	c.JSON(http.StatusOK, gin.H{})
 }

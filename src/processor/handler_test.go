@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"go.opencensus.io/trace"
 )
 
 func TestTweetHandler(t *testing.T) {
@@ -45,14 +45,14 @@ var (
 type TestClient struct {
 }
 
-func (c *TestClient) SaveState(ctx context.Context, store, key string, data interface{}) error {
+func (c *TestClient) SaveState(ctx trace.SpanContext, store, key string, data interface{}) error {
 	return nil
 }
 
-func (c *TestClient) InvokeService(ctx context.Context, service, method string, data interface{}) (out []byte, err error) {
+func (c *TestClient) InvokeService(ctx trace.SpanContext, service, method string, data interface{}) (out []byte, err error) {
 	return []byte("{\"score\": 0.1234556789}"), nil
 }
 
-func (c *TestClient) Publish(ctx context.Context, topic string, data interface{}) error {
+func (c *TestClient) Publish(ctx trace.SpanContext, topic string, data interface{}) error {
 	return nil
 }

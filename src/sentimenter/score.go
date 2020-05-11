@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	"go.opencensus.io/plugin/ochttp"
+	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/trace"
 )
 
@@ -42,9 +42,7 @@ type Response struct {
 	Docs []*ResponseItem `json:"documents"`
 }
 
-func scoreSentiment(ctx context.Context, txt, lang string) (sentiment float64, err error) {
-	ctx, span := trace.StartSpan(ctx, "sentimenter-scorer")
-	defer span.End()
+func scoreSentiment(ctx trace.SpanContext, txt, lang string) (sentiment float64, err error) {
 	if txt == "" {
 		return 0, errors.New("nil txt")
 	}
@@ -69,9 +67,13 @@ func scoreSentiment(ctx context.Context, txt, lang string) (sentiment float64, e
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Ocp-Apim-Subscription-Key", apiToken)
-	req = req.WithContext(ctx)
 
-	c := &http.Client{Transport: &ochttp.Transport{}}
+	httpFmt := tracecontext.HTTPFormat{}
+	httpFmt.SpanContextToRequest(ctx, req)
+
+	c := &http.Client{
+		Transport: &ochttp.Transport{},
+	}
 
 	resp, err := c.Do(req)
 	if err != nil {

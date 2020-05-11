@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/trace"
 )
 
@@ -18,9 +18,11 @@ func defaultHandler(c *gin.Context) {
 }
 
 func scoreHandler(c *gin.Context) {
-	ctx, span := trace.StartSpan(c.Request.Context(), "sentimenter-handler")
-	defer span.End()
-
+	httpFmt := tracecontext.HTTPFormat{}
+	ctx, ok := httpFmt.SpanContextFromRequest(c.Request)
+	if !ok {
+		ctx = trace.SpanContext{}
+	}
 	r := ScoreRequest{}
 	if err := c.ShouldBindJSON(&r); err != nil || r.Text == "" {
 		logger.Printf("error binding scoring request: %v", err)
@@ -43,11 +45,6 @@ func scoreHandler(c *gin.Context) {
 		return
 	}
 	logger.Printf("result: %f - %s", score, r.Text)
-
-	span.Annotate([]trace.Attribute{
-		trace.StringAttribute("score", fmt.Sprintf("%f", score)),
-		trace.StringAttribute("text", r.Text),
-	}, "Scored sentiment")
 
 	c.JSON(http.StatusOK, &SimpleScore{
 		Score: score,

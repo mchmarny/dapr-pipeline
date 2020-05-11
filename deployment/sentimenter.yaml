@@ -38,8 +38,3 @@ spec:
             secretKeyRef:
               name: demo-sentimenter-secret
               key: token
-        - name: TRACE_EXPORTER_URL
-          valueFrom:
-            configMapKeyRef:
-              name: trace-config
-              key: exporter-url

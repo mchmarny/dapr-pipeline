@@ -6,6 +6,7 @@ import (
 
 	ce "github.com/cloudevents/sdk-go/v2"
 	"github.com/gin-gonic/gin"
+	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/trace"
 )
 
@@ -39,8 +40,16 @@ func rootHandler(c *gin.Context) {
 }
 
 func eventHandler(c *gin.Context) {
-	_, span := trace.StartSpan(c.Request.Context(), "viewer-handler")
-	defer span.End()
+	httpFmt := tracecontext.HTTPFormat{}
+	ctx, ok := httpFmt.SpanContextFromRequest(c.Request)
+	if !ok {
+		ctx = trace.SpanContext{}
+	}
+
+	logger.Printf("Trace Info: 0-%x-%x-%x",
+		ctx.TraceID[:],
+		ctx.SpanID[:],
+		[]byte{byte(ctx.TraceOptions)})
 
 	e := ce.NewEvent()
 	if err := c.ShouldBindJSON(&e); err != nil {
@@ -75,11 +84,6 @@ func eventHandler(c *gin.Context) {
 		})
 		return
 	}
-
-	span.Annotate([]trace.Attribute{
-		trace.StringAttribute("version", eventVersion),
-		trace.StringAttribute("type", eventContentType),
-	}, "Received event")
 
 	// logger.Printf("tweet: %s", string(e.Data()))
 

@@ -41,8 +41,3 @@ spec:
           value: "sentimenter"
         - name: PROCESSOR_SCORE_METHOD_NAME
           value: "score"
-        - name: TRACE_EXPORTER_URL
-          valueFrom:
-            configMapKeyRef:
-              name: trace-config
-              key: exporter-url
