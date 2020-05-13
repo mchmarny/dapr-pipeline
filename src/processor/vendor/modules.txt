@@ -40,7 +40,7 @@ github.com/mattn/go-isatty
 # github.com/mchmarny/gcputil v0.3.3
 ## explicit
 github.com/mchmarny/gcputil/env
-# github.com/mchmarny/godapr v0.7.1
+# github.com/mchmarny/godapr v0.7.2
 ## explicit
 github.com/mchmarny/godapr/v1
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
@@ -77,7 +77,7 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# golang.org/x/sys v0.0.0-20200509044756-6aff5f38e54f
+# golang.org/x/sys v0.0.0-20200511232937-7e40ca221e25
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix

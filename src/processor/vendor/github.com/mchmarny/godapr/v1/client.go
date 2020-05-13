@@ -70,15 +70,15 @@ func (c *Client) exec(ctx trace.SpanContext, req *http.Request) (out []byte, sta
 		return
 	}
 
-	client := &http.Client{
-		Timeout:   c.timeout,
-		Transport: &ochttp.Transport{},
-	}
-
 	httpFmt := tracecontext.HTTPFormat{}
 	httpFmt.SpanContextToRequest(ctx, req)
 
 	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{
+		Timeout:   c.timeout,
+		Transport: &ochttp.Transport{},
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {

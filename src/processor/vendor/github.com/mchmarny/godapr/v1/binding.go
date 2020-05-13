@@ -11,10 +11,12 @@ import (
 )
 
 // InvokeBindingWithData posts the in content to specified binding
-func (c *Client) InvokeBindingWithData(ctx trace.SpanContext, binding string, in []byte) (out []byte, err error) {
-
+func (c *Client) InvokeBindingWithData(ctx trace.SpanContext, binding string, data *BindingData) (out []byte, err error) {
 	url := fmt.Sprintf("%s/v1.0/bindings/%s", c.url, binding)
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(in))
+
+	b, _ := json.Marshal(data)
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(b))
 	if err != nil {
 		err = errors.Wrapf(err, "error creating invoking binding request: %s", url)
 		return
@@ -34,7 +36,6 @@ func (c *Client) InvokeBindingWithData(ctx trace.SpanContext, binding string, in
 }
 
 // InvokeBinding serializes data and invokes InvokeBindingWithData
-func (c *Client) InvokeBinding(ctx trace.SpanContext, binding string, data interface{}) (out []byte, err error) {
-	b, _ := json.Marshal(data)
-	return c.InvokeBindingWithData(ctx, binding, b)
+func (c *Client) InvokeBinding(ctx trace.SpanContext, binding string, in interface{}) (out []byte, err error) {
+	return c.InvokeBindingWithData(ctx, binding, &BindingData{Data: in})
 }

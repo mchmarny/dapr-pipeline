@@ -22,3 +22,10 @@ type RetryPolicy struct {
 	Pattern   string `json:"pattern,omitempty"`
 	Interval  int64  `json:"interval,omitempty"`
 }
+
+// BindingData represents the BindingEventEnvelope
+type BindingData struct {
+	Name     string            `json:"name,omitempty"`
+	Data     interface{}       `json:"data,omitempty"`
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
