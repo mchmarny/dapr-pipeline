@@ -18,17 +18,17 @@ function build_release {
     echo "Platform: Mac, Release Version: ${RELEASE_VERSION}"
     CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -tags netgo -ldflags \
     "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
-    -mod vendor -o "../../bin/${PRJ}-mac"
+    -mod vendor -o "../../dist/${PRJ}-mac"
 
     echo "Platform: Linux, Release Version: ${RELEASE_VERSION}"
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags \
     "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
-    -mod vendor -o "../../bin/${PRJ}-linux"
+    -mod vendor -o "../../dist/${PRJ}-linux"
 
     echo "Platform: Windows, Release Version: ${RELEASE_VERSION}"
     CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -tags netgo -ldflags \
     "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
-    -mod vendor -o "../../bin/${PRJ}-windows"
+    -mod vendor -o "../../dist/${PRJ}-windows"
 
     )
 }
@@ -38,13 +38,13 @@ build_release "sentimenter"
 build_release "viewer"
 
 echo "Compressing OS specific releases..."
-zip -r "bin/dapr-pipeline-mac-${RELEASE_VERSION}.zip" \
+zip -r "dist/dapr-pipeline-mac-${RELEASE_VERSION}.zip" \
     bin/processor-mac bin/sentimenter-mac bin/viewer-mac
 
-zip -r "bin/dapr-pipeline-linux-${RELEASE_VERSION}.zip" \
+zip -r "dist/dapr-pipeline-linux-${RELEASE_VERSION}.zip" \
     bin/processor-linux bin/sentimenter-linux bin/viewer-linux
 
-zip -r "bin/dapr-pipeline-windows-${RELEASE_VERSION}.zip" \
+zip -r "dist/dapr-pipeline-windows-${RELEASE_VERSION}.zip" \
     bin/processor-windows bin/sentimenter-windows bin/viewer-windows
 
 echo "DONE"

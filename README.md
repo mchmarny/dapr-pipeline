@@ -57,7 +57,7 @@ export CS_TOKEN="<your key here>"
 And then launch it using Dapr:
 
 ```shell
-dapr run bin/sentimenter --app-id sentimenter --app-port 8082 --protocol http
+dapr run dist/sentimenter --app-id sentimenter --app-port 8082 --protocol http
 ```
 
 If everything goes well when launch these services using Dapr you will see following message:
@@ -72,7 +72,7 @@ If everything goes well when launch these services using Dapr you will see follo
 Next, start `viewer`. In yet another terminal window navigate to the `dapr-pipeline` directory and run:
 
 ```shell
-dapr run bin/viewer --app-id viewer --app-port 8083 --protocol http
+dapr run dist/viewer --app-id viewer --app-port 8083 --protocol http
 ```
 
 While there still won't be any data, at this point you should be able to navigate to the viewer UI
@@ -109,7 +109,7 @@ spec:
 Once the Twitter API secrets are set, you are ready to run the `processor`:
 
 ```shell
-dapr run bin/processor --app-id processor --app-port 8081 --protocol http --port 3500
+dapr run dist/processor --app-id processor --app-port 8081 --protocol http --port 3500
 ```
 
 ### Dashboard

@@ -16,8 +16,5 @@ src/viewer/components/statestore.yaml
 components/twitter.yaml
 
 # locally build binariees
-bin/processor*
-bin/sentimenter*
-bin/viewer*
-bin/*.zip
+dist
 

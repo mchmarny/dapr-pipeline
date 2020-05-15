@@ -21,21 +21,21 @@ function build_release {
             echo "Platform: Mac, Release Version: ${RELEASE_VERSION}"
             CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -tags netgo -ldflags \
             "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
-            -mod vendor -o "../../bin/${PRJ}"
+            -mod vendor -o "../../dist/${PRJ}"
             ;;
 
         Linux)
             echo "Platform: Linux, Release Version: ${RELEASE_VERSION}"
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags \
             "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
-            -mod vendor -o "../../bin/${PRJ}"
+            -mod vendor -o "../../dist/${PRJ}"
             ;;
 
         CYGWIN*|MINGW32*|MSYS*|MINGW*)
             echo "Platform: Windows, Release Version: ${RELEASE_VERSION}"
             CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -tags netgo -ldflags \
             "-w -extldflags '-static' -X main.AppVersion=${RELEASE_VERSION}" \
-            -mod vendor -o "../../bin/${PRJ}"
+            -mod vendor -o "../../dist/${PRJ}"
             ;;
 
         *)
