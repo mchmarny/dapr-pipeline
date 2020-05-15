@@ -40,21 +40,21 @@ window.onload = function () {
             var t = JSON.parse(e.data);
             console.log(t);
 
-            var scoreStr = ""
-            var score = parseFloat(t.sentiment)
-            if (score <= parseFloat(0.3)) {
-                scoreStr = "negative"
-            } else if (score >= parseFloat(0.6)) {
-                scoreStr = "positive"
+            var sentimentStr = ""
+            var score = parseFloat(t.score)
+            if (score < parseFloat(0.4)) {
+                sentimentStr = "negative"
+            } else if (score > parseFloat(0.6)) {
+                sentimentStr = "positive"
             }else {
-                scoreStr = "neutral"
+                sentimentStr = "neutral"
             }
-            
+            console.log(`score: ${score} == ${sentimentStr}`);
 
             var item = document.createElement("div");
             item.className = "item";
             var tmsg = "<img src='" + t.author_pic + "' class='profile-pic' />" +
-                "<div class='item-text'><b><img src='static/img/" + scoreStr +
+                "<div class='item-text'><b><img src='static/img/" + sentimentStr +
                 ".svg' alt='sentiment' class='sentiment' />" + t.author +
                 "<a href='https://twitter.com/" + t.author + "/status/" + t.id +
                 "' target='_blank'><img src='static/img/tw.svg' class='tweet-link' /></a></b>" +
@@ -63,8 +63,5 @@ window.onload = function () {
             item.innerHTML = tmsg
             appendLog(item);
         };
-
     } // if log
-
-
 };
