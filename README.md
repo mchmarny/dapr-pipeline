@@ -6,6 +6,8 @@ Example of Twitter event processing pipeline using dapr framework.
 
 > This readme covers local deployment. For Kubernetes deployment instructions [see here](./deployment/)
 
+> To keep it DRY, this demo uses [godapr](https://github.com/mchmarny/godapr) HTTP client 
+
 ## Prerequisites
 
 ### Dapr
