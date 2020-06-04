@@ -12,7 +12,7 @@ Example of Twitter event processing pipeline using dapr framework.
 
 ### Dapr
 
-To run this demo locally, you will have to install [Dapr](https://github.com).
+To run this demo locally, you will have to install [Dapr](https://github.com/dapr/docs/blob/master/getting-started/environment-setup.md).
 
 ### Twitter
 
