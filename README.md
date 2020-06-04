@@ -84,7 +84,7 @@ http://localhost:8083/
 
 ### Processor
 
-Finally, to start the `processor`, first edit the Dapt [Twitter input binding component](components/twitter.yaml) using the Twitter API secrets your created in [Prerequisites](#prerequisites)):
+Finally, to start the `processor`, first edit the Dapr [Twitter input binding component](components/twitter.yaml) using the Twitter API secrets your created in [Prerequisites](#prerequisites)):
 
 ```yaml
 apiVersion: dapr.io/v1alpha1
